@@ -1,0 +1,131 @@
+{%- style -%}
+  .cart-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 48px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .cart-card h1 { margin-bottom: 32px; }
+  .cart-empty {
+    text-align: center;
+    padding: 64px 0;
+  }
+  .cart-empty p {
+    font-size: 13px; color: var(--muted); margin-bottom: 24px;
+  }
+  .cart-empty a {
+    display: inline-block;
+    padding: 14px 32px;
+    background: var(--earth);
+    color: var(--card-bg);
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background var(--duration-fast);
+  }
+  .cart-empty a:hover { background: var(--white); }
+  .cart-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cart-item__img {
+    width: 80px; height: 100px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--ph1);
+  }
+  .cart-item__img img { width: 100%; height: 100%; object-fit: cover; }
+  .cart-item__info {}
+  .cart-item__title {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .cart-item__variant {
+    font-size: 11px; color: var(--muted); margin-bottom: 8px;
+  }
+  .cart-item__remove {
+    font-size: 10px; color: var(--dim); background: none; border: none;
+    cursor: pointer; text-decoration: underline;
+    transition: color var(--duration-fast);
+  }
+  .cart-item__remove:hover { color: var(--earth); }
+  .cart-item__price {
+    font-size: 14px; font-weight: 700; color: var(--earth);
+    text-align: right;
+  }
+  .cart-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 32px;
+  }
+  .cart-total-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .cart-total-price {
+    font-size: 24px; font-weight: 900; letter-spacing: -0.02em;
+  }
+  .cart-checkout {
+    margin-top: 24px;
+    max-width: 320px;
+    margin-left: auto;
+  }
+  @media (max-width: 560px) {
+    .cart-card { padding: 24px 16px; }
+    .cart-item { grid-template-columns: 60px 1fr auto; gap: 12px; }
+    .cart-item__img { width: 60px; height: 80px; }
+  }
+{%- endstyle -%}
+
+<div class="cart-card reveal">
+  <h1 class="heading-lg">Your Cart</h1>
+
+  {%- if cart.item_count == 0 -%}
+    <div class="cart-empty">
+      <p>Your cart is empty.</p>
+      <a href="/collections/all">Continue Shopping</a>
+    </div>
+  {%- else -%}
+    <form action="/cart" method="post">
+      {%- for item in cart.items -%}
+        <div class="cart-item">
+          <div class="cart-item__img">
+            {%- if item.image != blank -%}
+              <img src="{{ item.image | image_url: width: 200 }}" alt="{{ item.title }}" loading="lazy" decoding="async">
+            {%- endif -%}
+          </div>
+          <div class="cart-item__info">
+            <a href="{{ item.url }}" class="cart-item__title">{{ item.product.title }}</a>
+            <div class="cart-item__variant">{{ item.variant.title }} &middot; Qty: {{ item.quantity }}</div>
+            <a href="/cart/change?id={{ item.key }}&quantity=0" class="cart-item__remove">Remove</a>
+          </div>
+          <div class="cart-item__price">{{ item.final_line_price | money_without_trailing_zeros }}</div>
+        </div>
+      {%- endfor -%}
+
+      <div class="cart-footer">
+        <span class="cart-total-label">Subtotal</span>
+        <span class="cart-total-price">{{ cart.total_price | money_without_trailing_zeros }}</span>
+      </div>
+      <div class="cart-checkout">
+        <button type="submit" name="checkout" class="btn-earth">Checkout</button>
+      </div>
+    </form>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Cart",
+  "settings": []
+}
+{% endschema %}

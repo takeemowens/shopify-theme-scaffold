@@ -1,0 +1,50 @@
+{%- style -%}
+  .page-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 64px 48px;
+    max-width: 720px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .page-card h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .page-card .rte {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+  .page-card .rte h2, .page-card .rte h3 {
+    color: var(--white);
+    margin-top: 32px;
+    margin-bottom: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .page-card .rte p { margin-bottom: 16px; }
+  .page-card .rte a { color: var(--earth); border-bottom: 1px solid var(--earth); }
+  @media (max-width: 560px) {
+    .page-card { padding: 32px 20px; }
+  }
+{%- endstyle -%}
+
+<div class="page-card reveal">
+  <h1>{{ page.title }}</h1>
+  <div class="rte">
+    {{ page.content }}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Page Content",
+  "settings": []
+}
+{% endschema %}

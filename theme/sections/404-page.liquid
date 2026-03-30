@@ -1,0 +1,49 @@
+{%- style -%}
+  .error-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 96px 48px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .error-num {
+    font-size: clamp(80px, 15vw, 180px);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    color: var(--earth-visible);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .error-card p {
+    font-size: 13px; color: var(--muted); margin-bottom: 32px;
+  }
+  .error-card a {
+    display: inline-block;
+    padding: 14px 32px;
+    background: var(--earth);
+    color: var(--card-bg);
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background var(--duration-fast);
+  }
+  .error-card a:hover { background: var(--white); }
+{%- endstyle -%}
+
+<div class="error-card reveal">
+  <div class="error-num">404</div>
+  <h1 class="heading-lg" style="margin-bottom:12px;">Page Not Found</h1>
+  <p>The page you're looking for doesn't exist or has been moved.</p>
+  <a href="/">Back to Home</a>
+</div>
+
+{% schema %}
+{
+  "name": "404 Page",
+  "settings": []
+}
+{% endschema %}

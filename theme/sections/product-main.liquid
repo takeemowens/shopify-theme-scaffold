@@ -1,0 +1,968 @@
+{%- assign current_variant = product.selected_or_first_available_variant -%}
+{%- assign color_option_index = nil -%}
+{%- assign size_option_index = nil -%}
+{%- for option in product.options -%}
+  {%- assign option_down = option | downcase -%}
+  {%- if option_down == 'color' or option_down == 'colour' -%}
+    {%- assign color_option_index = forloop.index0 -%}
+    {%- assign color_option_name = option -%}
+  {%- elsif option_down == 'size' -%}
+    {%- assign size_option_index = forloop.index0 -%}
+    {%- assign size_option_name = option -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- comment -%} Build list of "other" option indices (not color, not size) {%- endcomment -%}
+{%- assign other_option_indices = '' -%}
+{%- for option in product.options -%}
+  {%- assign option_down = option | downcase -%}
+  {%- unless option_down == 'color' or option_down == 'colour' or option_down == 'size' -%}
+    {%- if other_option_indices == '' -%}
+      {%- assign other_option_indices = forloop.index0 | append: '' -%}
+    {%- else -%}
+      {%- assign other_option_indices = other_option_indices | append: ',' | append: forloop.index0 -%}
+    {%- endif -%}
+  {%- endunless -%}
+{%- endfor -%}
+
+{%- comment -%} Build unique colour list from variants {%- endcomment -%}
+{%- assign color_values = '' -%}
+{%- if color_option_index != nil -%}
+  {%- for variant in product.variants -%}
+    {%- assign c = variant.options[color_option_index] -%}
+    {%- unless color_values contains c -%}
+      {%- if color_values == '' -%}
+        {%- assign color_values = c -%}
+      {%- else -%}
+        {%- assign color_values = color_values | append: '||' | append: c -%}
+      {%- endif -%}
+    {%- endunless -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- assign color_list = color_values | split: '||' -%}
+
+{%- comment -%} Expose variant data as JSON for JS {%- endcomment -%}
+<script type="application/json" id="productVariantData">
+  {{ product.variants | json }}
+</script>
+
+<!-- ===== SPLIT-SCREEN HERO ===== -->
+<div class="split-hero reveal" id="splitHero">
+
+  <!-- Image Side -->
+  <div class="split-image" id="splitImageWrap">
+    <div class="split-image-inner" id="heroImg">
+      <div class="product-tilt" id="productTilt">
+        {%- if color_list.size > 0 -%}
+          {%- assign shown_colors = '' -%}
+          {%- for variant in product.variants -%}
+            {%- assign vc = variant.options[color_option_index] -%}
+            {%- unless shown_colors contains vc -%}
+              {%- if variant.featured_image -%}
+                <img
+                  class="product-img{% if forloop.index == 1 %} active{% endif %}"
+                  data-color="{{ vc }}"
+                  src="{{ variant.featured_image | image_url: width: 900 }}"
+                  srcset="{{ variant.featured_image | image_url: width: 500 }} 500w,
+                         {{ variant.featured_image | image_url: width: 900 }} 900w,
+                         {{ variant.featured_image | image_url: width: 1200 }} 1200w"
+                  sizes="(max-width: 560px) 100vw, (max-width: 900px) 100vw, 55vw"
+                  alt="{{ product.title }} — {{ vc }}"
+                  loading="{% if forloop.index == 1 %}eager{% else %}lazy{% endif %}"
+                  decoding="async"
+                >
+              {%- endif -%}
+              {%- assign shown_colors = shown_colors | append: vc | append: ',' -%}
+            {%- endunless -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- for image in product.images limit: 1 -%}
+            <img
+              class="product-img active"
+              src="{{ image | image_url: width: 900 }}"
+              srcset="{{ image | image_url: width: 500 }} 500w,
+                     {{ image | image_url: width: 900 }} 900w,
+                     {{ image | image_url: width: 1200 }} 1200w"
+              sizes="(max-width: 560px) 100vw, (max-width: 900px) 100vw, 55vw"
+              alt="{{ image.alt | default: product.title }}"
+              loading="eager"
+              decoding="async"
+            >
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+    </div>
+
+    <!-- Floating thumbnail strip -->
+    <div class="float-thumbs stagger">
+      {%- if color_list.size > 0 -%}
+        {%- assign thumb_colors = '' -%}
+        {%- for variant in product.variants -%}
+          {%- assign tc = variant.options[color_option_index] -%}
+          {%- unless thumb_colors contains tc -%}
+            {%- if variant.featured_image -%}
+              <div class="float-thumb{% if forloop.index == 1 %} active{% endif %}" data-color="{{ tc }}">
+                <img src="{{ variant.featured_image | image_url: width: 120 }}" alt="{{ tc }}">
+              </div>
+            {%- endif -%}
+            {%- assign thumb_colors = thumb_colors | append: tc | append: ',' -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for image in product.images limit: 4 -%}
+          <div class="float-thumb{% if forloop.first %} active{% endif %}" data-index="{{ forloop.index0 }}">
+            <img src="{{ image | image_url: width: 120 }}" alt="{{ image.alt | default: product.title }}">
+          </div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  </div>
+
+  <!-- Info Side -->
+  <div class="split-info">
+    {%- if product.type != blank -%}
+      <div class="split-eyebrow slide-right">{{ product.type }}</div>
+    {%- elsif product.collections.size > 0 -%}
+      <div class="split-eyebrow slide-right">{{ product.collections.first.title }}</div>
+    {%- endif -%}
+
+    <h1 class="split-title slide-right" style="transition-delay:0.08s;">{{ product.title }}</h1>
+
+    {%- if product.description != blank -%}
+      <div class="desc-wrap slide-right" style="transition-delay:0.16s;">
+        <div class="split-subtitle desc-text" id="descText">{{ product.description }}</div>
+        <button class="desc-toggle" id="descToggle" aria-expanded="false">Show more</button>
+      </div>
+    {%- endif -%}
+
+    <div class="split-price slide-right" style="transition-delay:0.24s;" id="splitPrice">
+      <span class="curr">$</span><span id="priceAmount">{{ current_variant.price | money_without_trailing_zeros | remove: '$' }}</span>
+      {%- if current_variant.compare_at_price > current_variant.price -%}
+        <span class="compare-at" id="comparePrice">{{ current_variant.compare_at_price | money_without_trailing_zeros }}</span>
+      {%- endif -%}
+    </div>
+
+    <div class="split-divider fade-in"></div>
+
+    {%- comment -%}
+      Single loop — renders options in Shopify admin order.
+      Reordering in admin immediately reflects in the UI.
+    {%- endcomment -%}
+    {%- for option in product.options_with_values -%}
+      {%- assign option_down = option.name | downcase -%}
+      {%- assign opt_idx = forloop.index0 -%}
+
+      {%- if option_down == 'color' or option_down == 'colour' -%}
+        <!-- Colour Selector -->
+        <div class="option-label fade-in">{{ option.name }} — <em id="colorLabel">{{ current_variant.options[opt_idx] | default: color_list.first }}</em></div>
+        <div class="color-row" role="radiogroup" aria-label="{{ option.name }}">
+          {%- for color in color_list -%}
+            <div
+              class="color-swatch{% if forloop.first %} active{% endif %}"
+              data-color="{{ color }}"
+              data-option-index="{{ opt_idx }}"
+              {%- assign color_handle = color | handleize -%}
+              {%- case color_handle -%}
+                {%- when 'onyx' -%}{%- assign swatch_hex = '#1A1615' -%}
+                {%- when 'bone' -%}{%- assign swatch_hex = '#F5F0E8' -%}
+                {%- when 'black' -%}{%- assign swatch_hex = '#1A1615' -%}
+                {%- when 'white' -%}{%- assign swatch_hex = '#F5F0E8' -%}
+                {%- when 'cream' -%}{%- assign swatch_hex = '#FFF8E7' -%}
+                {%- when 'navy' -%}{%- assign swatch_hex = '#1C2A3A' -%}
+                {%- when 'charcoal' -%}{%- assign swatch_hex = '#3A3A3A' -%}
+                {%- when 'charcoal-blue' -%}{%- assign swatch_hex = '#2E3A4A' -%}
+                {%- when 'olive' -%}{%- assign swatch_hex = '#5C5C3D' -%}
+                {%- when 'olive-green' -%}{%- assign swatch_hex = '#4A5A3A' -%}
+                {%- when 'sage' -%}{%- assign swatch_hex = '#8A9A7B' -%}
+                {%- when 'camel' -%}{%- assign swatch_hex = '#C19A6B' -%}
+                {%- when 'sand' -%}{%- assign swatch_hex = '#C4B39A' -%}
+                {%- when 'earth' -%}{%- assign swatch_hex = '#8A7356' -%}
+                {%- when 'mushroom' -%}{%- assign swatch_hex = '#C4B39A' -%}
+                {%- when 'natural' -%}{%- assign swatch_hex = '#F0E6CF' -%}
+                {%- when 'ivory' -%}{%- assign swatch_hex = '#F5F0E4' -%}
+                {%- when 'oat' -%}{%- assign swatch_hex = '#EDE4D0' -%}
+                {%- when 'ecru' -%}{%- assign swatch_hex = '#EDE0C4' -%}
+                {%- when 'stone' -%}{%- assign swatch_hex = '#B5A898' -%}
+                {%- when 'grey' -%}{%- assign swatch_hex = '#9A9A9A' -%}
+                {%- when 'gray' -%}{%- assign swatch_hex = '#9A9A9A' -%}
+                {%- when 'heather-grey' -%}{%- assign swatch_hex = '#A8A8A8' -%}
+                {%- when 'brown' -%}{%- assign swatch_hex = '#7A5C3A' -%}
+                {%- when 'tan' -%}{%- assign swatch_hex = '#C4A882' -%}
+                {%- else -%}{%- assign swatch_hex = '#888' -%}
+              {%- endcase -%}
+              style="background:{{ swatch_hex }};"
+              title="{{ color }}"
+              role="radio"
+              aria-label="{{ color }}"
+              aria-checked="{% if forloop.first %}true{% else %}false{% endif %}"
+              tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+            ></div>
+          {%- endfor -%}
+        </div>
+
+      {%- elsif option_down == 'size' -%}
+        <!-- Size Selector -->
+        <div class="option-label fade-in">{{ option.name }} — <em id="sizeLabel">Select</em></div>
+        <div class="size-row" id="sizeRow" role="radiogroup" aria-label="{{ option.name }}" aria-describedby="sizeError">
+          {%- for value in option.values -%}
+            <button
+              class="size-btn"
+              data-option-index="{{ opt_idx }}"
+              data-value="{{ value }}"
+              type="button"
+              role="radio"
+              aria-checked="false"
+              aria-label="{{ value }}"
+            >{{ value }}</button>
+          {%- endfor -%}
+        </div>
+        <div class="stock-notice" id="stockNotice"></div>
+        <div class="size-error" id="sizeError" role="alert" aria-live="assertive">Please select a size to continue.</div>
+
+      {%- else -%}
+        {%- comment -%}
+          Value option (Pack Size, Bundle, etc.)
+          Scan variants to find the min price per value.
+          If prices differ across values, show price inside each button.
+        {%- endcomment -%}
+        {%- assign _first_price = nil -%}
+        {%- assign _prices_vary = false -%}
+        {%- for value in option.values -%}
+          {%- assign _val_min = nil -%}
+          {%- for variant in product.variants -%}
+            {%- if variant.options[opt_idx] == value -%}
+              {%- if _val_min == nil or variant.price < _val_min -%}
+                {%- assign _val_min = variant.price -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if _first_price == nil -%}
+            {%- assign _first_price = _val_min -%}
+          {%- elsif _val_min != _first_price -%}
+            {%- assign _prices_vary = true -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        <div class="option-label fade-in">{{ option.name }} — <em id="otherLabel-{{ opt_idx }}">{{ current_variant.options[opt_idx] | default: 'Select' }}</em></div>
+        <div class="other-opt-row" role="radiogroup" aria-label="{{ option.name }}" id="otherRow-{{ opt_idx }}">
+          {%- for value in option.values -%}
+            {%- if _prices_vary -%}
+              {%- assign _val_min = nil -%}
+              {%- for variant in product.variants -%}
+                {%- if variant.options[opt_idx] == value -%}
+                  {%- if _val_min == nil or variant.price < _val_min -%}
+                    {%- assign _val_min = variant.price -%}
+                  {%- endif -%}
+                {%- endif -%}
+              {%- endfor -%}
+            {%- endif -%}
+            <button
+              class="size-btn opt-value-btn{% if current_variant.options[opt_idx] == value %} active{% endif %}"
+              data-option-index="{{ opt_idx }}"
+              data-value="{{ value }}"
+              type="button"
+              role="radio"
+              aria-checked="{% if current_variant.options[opt_idx] == value %}true{% else %}false{% endif %}"
+              aria-label="{{ value }}{% if _prices_vary and _val_min %} · {{ _val_min | money_without_trailing_zeros }}{% endif %}"
+            >
+              <span class="opt-value-name">{{ value }}</span>
+              {%- if _prices_vary and _val_min -%}
+                <span class="opt-price">{{ _val_min | money_without_trailing_zeros }}</span>
+              {%- endif -%}
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+    {%- endfor -%}
+
+    <!-- Quantity -->
+    <div class="option-label fade-in">Qty</div>
+    <div class="qty-row">
+      <button class="qty-btn" id="qtyMinus" aria-label="Decrease quantity" type="button">&minus;</button>
+      <span class="qty-val" id="qtyVal">1</span>
+      <button class="qty-btn" id="qtyPlus" aria-label="Increase quantity" type="button">+</button>
+    </div>
+
+    <!-- Add to Cart -->
+    <button
+      class="atc-btn{% if size_option_index != nil %} needs-size{% endif %}"
+      id="atcBtn"
+      type="button"
+      data-variant-id="{{ current_variant.id }}"
+      {% unless current_variant.available %}disabled{% endunless %}
+    >
+      {%- if current_variant.available -%}Add to Cart{%- else -%}Sold Out{%- endif -%}
+    </button>
+
+    <!-- Wishlist -->
+    <button class="wishlist-btn" id="wishlistBtn" type="button"
+      data-wishlist-handle="{{ product.handle }}"
+      data-wishlist-title="{{ product.title | escape }}"
+      data-wishlist-image="{{ product.featured_image | image_url: width: 200 }}"
+      data-wishlist-price="{{ product.price | money_without_trailing_zeros }}"
+      data-wishlist-url="{{ product.url }}"
+    >&#9825; &nbsp; <span class="wishlist-label">Add to Wishlist</span></button>
+
+    <!-- Trust badges -->
+    <div class="trust-row">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'trust_badge' -%}
+          <span class="trust-item" {{ block.shopify_attributes }}>&#10022; {{ block.settings.text }}</span>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+<!-- ===== DETAIL CARDS ===== -->
+{%- assign detail_blocks = section.blocks | where: 'type', 'detail_card' -%}
+{%- if detail_blocks.size > 0 -%}
+<div class="details-grid stagger">
+  {%- assign detail_index = 0 -%}
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'detail_card' -%}
+      {%- assign detail_index = detail_index | plus: 1 -%}
+      <div class="detail-card" {{ block.shopify_attributes }}>
+        <div class="detail-num">{{ detail_index | prepend: '0' | slice: -2, 2 }}</div>
+        <div class="detail-title">{{ block.settings.title }}</div>
+        <div class="detail-text">{{ block.settings.text }}</div>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+{%- endif -%}
+
+<!-- ===== COMPLETE THE LOOK ===== -->
+{%- comment -%}
+  Strategy: Try Shopify recommendations API first (AJAX).
+  Fallback: pull other products from the same collection,
+  excluding the current product. Once Shopify has enough
+  browsing/sales data, the AJAX call will replace this.
+{%- endcomment -%}
+
+{%- assign fallback_products = collections.all.products -%}
+{%- assign fallback_count = 0 -%}
+{%- for p in fallback_products -%}
+  {%- if p.handle != product.handle -%}
+    {%- assign fallback_count = fallback_count | plus: 1 -%}
+  {%- endif -%}
+  {%- if fallback_count >= 6 -%}{%- break -%}{%- endif -%}
+{%- endfor -%}
+
+{%- if fallback_count > 0 -%}
+<div class="related-card reveal" id="relatedProducts"
+     data-product-id="{{ product.id }}"
+     data-url="{{ routes.product_recommendations_url }}?product_id={{ product.id }}&limit=6&section_id={{ section.id }}">
+  <div class="related-header">
+    <div class="related-title">{{ section.settings.related_heading | default: 'Complete the Look' }}</div>
+    <a href="/collections/all" class="related-link">Shop All &rarr;</a>
+  </div>
+  <div class="related-scroll" id="relatedScroll">
+    {%- if recommendations.performed and recommendations.products.size > 0 -%}
+      {%- for rec in recommendations.products limit: 6 -%}
+        <a class="rel-item" href="{{ rec.url }}">
+          <div class="rel-img">
+            {%- if rec.featured_image != blank -%}
+              <img
+                src="{{ rec.featured_image | image_url: width: 400 }}"
+                srcset="{{ rec.featured_image | image_url: width: 250 }} 250w,
+                       {{ rec.featured_image | image_url: width: 400 }} 400w,
+                       {{ rec.featured_image | image_url: width: 600 }} 600w"
+                sizes="(max-width: 560px) 40vw, 22vw"
+                alt="{{ rec.title }}"
+                loading="lazy"
+                decoding="async"
+              >
+            {%- endif -%}
+          </div>
+          <div class="rel-name">{{ rec.title }}</div>
+          <div class="rel-sub">{{ rec.type }}</div>
+          <div class="rel-price">{{ rec.price | money_without_trailing_zeros }}</div>
+        </a>
+      {%- endfor -%}
+    {%- else -%}
+      {%- comment -%} Fallback: other products from "All" collection {%- endcomment -%}
+      {%- assign shown = 0 -%}
+      {%- for p in fallback_products -%}
+        {%- if p.handle != product.handle and shown < 6 -%}
+          <a class="rel-item" href="{{ p.url }}">
+            <div class="rel-img">
+              {%- if p.featured_image != blank -%}
+                <img
+                  src="{{ p.featured_image | image_url: width: 400 }}"
+                  srcset="{{ p.featured_image | image_url: width: 250 }} 250w,
+                         {{ p.featured_image | image_url: width: 400 }} 400w,
+                         {{ p.featured_image | image_url: width: 600 }} 600w"
+                  sizes="(max-width: 560px) 40vw, 22vw"
+                  alt="{{ p.title }}"
+                  loading="lazy"
+                  decoding="async"
+                >
+              {%- endif -%}
+            </div>
+            <div class="rel-name">{{ p.title }}</div>
+            <div class="rel-sub">{{ p.type }}</div>
+            <div class="rel-price">{{ p.price | money_without_trailing_zeros }}</div>
+          </a>
+          {%- assign shown = shown | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</div>
+{%- endif -%}
+
+<script>
+(function() {
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isPointerFine  = window.matchMedia('(pointer: fine)').matches;
+
+  /* ── Variant data ── */
+  var variantData = JSON.parse(document.getElementById('productVariantData').textContent || '[]');
+  var colorOptionIdx = {{ color_option_index | default: 'null' }};
+  var sizeOptionIdx  = {{ size_option_index | default: 'null' }};
+  var selectedOptions = {};
+
+  /* Initialise selected options from current variant */
+  {%- for option in product.options_with_values -%}
+    selectedOptions[{{ forloop.index0 }}] = {{ current_variant.options[forloop.index0] | json }};
+  {%- endfor -%}
+
+  /* ── Find matching variant ── */
+  function findVariant() {
+    return variantData.find(function(v) {
+      return v.options.every(function(opt, i) {
+        return !selectedOptions[i] || selectedOptions[i] === opt;
+      });
+    });
+  }
+
+  /* ── GPU parallax on hero image ── */
+  var heroImgWrap = document.getElementById('heroImg');
+  var heroVisible = true, rafPending = false;
+  if (heroImgWrap && !prefersReduced && isPointerFine) {
+    var heroEl = heroImgWrap.closest('.split-hero');
+    var vis = new IntersectionObserver(function(entries) { heroVisible = entries[0].isIntersecting; }, { threshold: 0 });
+    if (heroEl) vis.observe(heroEl);
+    window.addEventListener('scroll', function() {
+      if (!heroVisible || rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(function() {
+        heroImgWrap.style.transform = 'translate3d(0, ' + (window.scrollY * 0.18) + 'px, 0)';
+        rafPending = false;
+      });
+    }, { passive: true });
+  }
+
+  /* ── 3D Magnetic Tilt on product image ── */
+  var splitImageWrap = document.getElementById('splitImageWrap');
+  var productTilt    = document.getElementById('productTilt');
+  var TILT = 7;
+
+  if (splitImageWrap && productTilt && !prefersReduced && isPointerFine) {
+    var tiltRaf = null;
+    splitImageWrap.addEventListener('mouseenter', function() {
+      productTilt.style.transition = 'transform 0.08s linear';
+    }, { passive: true });
+    splitImageWrap.addEventListener('mousemove', function(e) {
+      if (tiltRaf) cancelAnimationFrame(tiltRaf);
+      tiltRaf = requestAnimationFrame(function() {
+        var rect = splitImageWrap.getBoundingClientRect();
+        var x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        var y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+        var tiltX = (0.5 - y) * TILT;
+        var tiltY = (x - 0.5) * TILT;
+        productTilt.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + tiltY + 'deg)';
+      });
+    }, { passive: true });
+    splitImageWrap.addEventListener('mouseleave', function() {
+      if (tiltRaf) { cancelAnimationFrame(tiltRaf); tiltRaf = null; }
+      productTilt.style.transition = 'transform 0.8s cubic-bezier(0.16,1,0.3,1)';
+      productTilt.style.transform = '';
+    }, { passive: true });
+  }
+
+  /* ── Colour switcher with crossfade ── */
+  var colorLabel  = document.getElementById('colorLabel');
+  var productImgs = document.querySelectorAll('.product-img');
+  var floatThumbs = document.querySelectorAll('.float-thumb[data-color]');
+  var swatches    = document.querySelectorAll('.color-swatch');
+
+  function setActiveColor(colorName) {
+    productImgs.forEach(function(img) { img.classList.toggle('active', img.dataset.color === colorName); });
+    if (colorLabel) colorLabel.textContent = colorName;
+    floatThumbs.forEach(function(t) { t.classList.toggle('active', t.dataset.color === colorName); });
+
+    if (colorOptionIdx !== null) {
+      selectedOptions[colorOptionIdx] = colorName;
+      updateVariant();
+    }
+  }
+
+  swatches.forEach(function(sw) {
+    sw.addEventListener('click', function() {
+      swatches.forEach(function(s) { s.classList.remove('active'); s.setAttribute('aria-checked', 'false'); s.setAttribute('tabindex', '-1'); });
+      sw.classList.add('active');
+      sw.setAttribute('aria-checked', 'true');
+      sw.setAttribute('tabindex', '0');
+      sw.classList.remove('swatch-pop');
+      void sw.offsetWidth;
+      sw.classList.add('swatch-pop');
+      setTimeout(function() { sw.classList.remove('swatch-pop'); }, 420);
+      setActiveColor(sw.dataset.color);
+    });
+    sw.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sw.click(); }
+    });
+  });
+
+  /* ── Thumbnail click ── */
+  document.querySelectorAll('.float-thumb').forEach(function(thumb) {
+    thumb.addEventListener('click', function() {
+      document.querySelectorAll('.float-thumb').forEach(function(t) { t.classList.remove('active'); });
+      thumb.classList.add('active');
+      thumb.classList.remove('thumb-pop');
+      void thumb.offsetWidth;
+      thumb.classList.add('thumb-pop');
+      setTimeout(function() { thumb.classList.remove('thumb-pop'); }, 420);
+      if (thumb.dataset.color) {
+        swatches.forEach(function(sw) { sw.classList.toggle('active', sw.dataset.color === thumb.dataset.color); });
+        setActiveColor(thumb.dataset.color);
+      }
+    });
+  });
+
+  /* ── Size buttons ── */
+  var sizeLabel = document.getElementById('sizeLabel');
+  var sizeRow   = document.getElementById('sizeRow');
+  var sizeBtns  = document.querySelectorAll('.size-btn');
+  var atcBtn    = document.getElementById('atcBtn');
+
+  sizeBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (btn.classList.contains('sold-out')) return;
+
+      /* Use the button's own option index — not the hardcoded sizeOptionIdx.
+         This ensures Pack Size, Size, and any future option each update their
+         own slot in selectedOptions independently. */
+      var optIdx = parseInt(btn.dataset.optionIndex, 10);
+
+      /* Deselect only siblings in the same option group */
+      sizeBtns.forEach(function(b) {
+        if (parseInt(b.dataset.optionIndex, 10) === optIdx) {
+          b.classList.remove('active');
+          b.setAttribute('aria-checked', 'false');
+        }
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-checked', 'true');
+
+      /* Update the correct label element */
+      if (optIdx === sizeOptionIdx) {
+        if (sizeLabel) sizeLabel.textContent = btn.dataset.value || btn.textContent.trim();
+      } else {
+        var otherLabelEl = document.getElementById('otherLabel-' + optIdx);
+        if (otherLabelEl) otherLabelEl.textContent = btn.dataset.value || btn.textContent.trim();
+      }
+
+      /* Write to the correct selectedOptions slot, then find + update variant */
+      selectedOptions[optIdx] = btn.dataset.value || btn.textContent.trim();
+      updateVariant();
+
+      /* Clear size error only when the size option is the one being changed */
+      if (optIdx === sizeOptionIdx) {
+        var sizeError = document.getElementById('sizeError');
+        if (sizeError) sizeError.classList.remove('visible');
+        if (sizeRow) sizeRow.classList.remove('error');
+        if (atcBtn) atcBtn.classList.remove('needs-size');
+      }
+    });
+    /* Press micro-interaction */
+    btn.addEventListener('mousedown', function() { btn.classList.add('press'); });
+    btn.addEventListener('mouseup', function() { btn.classList.remove('press'); });
+    btn.addEventListener('mouseleave', function() { btn.classList.remove('press'); });
+    btn.addEventListener('touchstart', function() { btn.classList.add('press'); }, { passive: true });
+    btn.addEventListener('touchend', function() { btn.classList.remove('press'); }, { passive: true });
+  });
+
+  /* ── Update variant on option change ── */
+  function updateVariant() {
+    var variant = findVariant();
+    if (!variant) return;
+
+    /* Update URL */
+    var url = new URL(window.location);
+    url.searchParams.set('variant', variant.id);
+    window.history.replaceState({}, '', url.toString());
+
+    /* Update ATC button */
+    if (atcBtn) {
+      atcBtn.dataset.variantId = variant.id;
+      if (variant.available) {
+        atcBtn.disabled = false;
+        atcBtn.textContent = 'Add to Cart';
+      } else {
+        atcBtn.disabled = true;
+        atcBtn.textContent = 'Sold Out';
+      }
+    }
+
+    /* Update price display */
+    var priceEl = document.getElementById('priceAmount');
+    var compareEl = document.getElementById('comparePrice');
+    if (priceEl && variant.price) {
+      var p = variant.price / 100;
+      priceEl.textContent = p % 1 === 0 ? Math.round(p) : p.toFixed(2);
+    }
+    if (compareEl) {
+      if (variant.compare_at_price && variant.compare_at_price > variant.price) {
+        var cp = variant.compare_at_price / 100;
+        compareEl.textContent = cp % 1 === 0 ? Math.round(cp) : cp.toFixed(2);
+        compareEl.style.display = '';
+      } else {
+        compareEl.style.display = 'none';
+      }
+    }
+
+    /* Update size button availability */
+    if (sizeOptionIdx !== null && colorOptionIdx !== null) {
+      sizeBtns.forEach(function(btn) {
+        var sizeVal = btn.dataset.value || btn.textContent.trim();
+        var matchVariant = variantData.find(function(v) {
+          return v.options[colorOptionIdx] === selectedOptions[colorOptionIdx] &&
+                 v.options[sizeOptionIdx] === sizeVal;
+        });
+        if (matchVariant && !matchVariant.available) {
+          btn.classList.add('sold-out');
+          btn.disabled = true;
+        } else {
+          btn.classList.remove('sold-out');
+          btn.disabled = false;
+        }
+      });
+    }
+  }
+
+  /* ── Quantity counter ── */
+  (function() {
+    var qtyVal = document.getElementById('qtyVal');
+    var qtyMinus = document.getElementById('qtyMinus');
+    var qtyPlus = document.getElementById('qtyPlus');
+    var qty = 1;
+    if (qtyMinus && qtyPlus && qtyVal) {
+      qtyMinus.addEventListener('click', function() { if (qty > 1) { qty--; qtyVal.textContent = qty; } });
+      qtyPlus.addEventListener('click', function() { qty++; qtyVal.textContent = qty; });
+    }
+  })();
+
+  /* ── ATC — Shopify /cart/add.js ── */
+  if (atcBtn) {
+    atcBtn.addEventListener('mousedown', function() { atcBtn.classList.add('press'); });
+    atcBtn.addEventListener('mouseup', function() { atcBtn.classList.remove('press'); });
+    atcBtn.addEventListener('mouseleave', function() { atcBtn.classList.remove('press'); });
+
+    atcBtn.addEventListener('click', function() {
+      if (atcBtn.disabled || atcBtn.classList.contains('success')) return;
+
+      /* Size guard */
+      if (sizeOptionIdx !== null && sizeRow) {
+        var hasSize = sizeRow.querySelector('.size-btn.active');
+        if (!hasSize) {
+          var sizeError = document.getElementById('sizeError');
+          if (sizeError) sizeError.classList.add('visible');
+          sizeRow.classList.add('error');
+          sizeRow.classList.remove('shake');
+          void sizeRow.offsetWidth;
+          sizeRow.classList.add('shake');
+          sizeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          return;
+        }
+      }
+
+      var variantId = atcBtn.dataset.variantId;
+      var qty = parseInt(document.getElementById('qtyVal').textContent || '1', 10);
+
+      atcBtn.classList.remove('press');
+      atcBtn.classList.add('success');
+      atcBtn.textContent = 'ADDED \u2713';
+
+      /* Add to cart via AIW system — opens drawer + shows toast */
+      if (window.AIW && window.AIW.addToCart) {
+        window.AIW.addToCart(variantId, qty, '{{ product.title | escape }}');
+      }
+
+      /* Mirror to sticky nav mini-ATC */
+      var miniAtc = document.getElementById('navMiniAtc');
+      if (miniAtc) {
+        miniAtc.classList.add('success');
+        miniAtc.textContent = 'Added \u2713';
+      }
+
+      setTimeout(function() {
+        atcBtn.classList.remove('success');
+        atcBtn.textContent = 'Add to Cart';
+        if (miniAtc) {
+          miniAtc.classList.remove('success');
+          miniAtc.textContent = 'Add to Cart';
+        }
+      }, 2200);
+    });
+  }
+
+  /* ── Sticky nav scroll transformation ── */
+  var navCard     = document.getElementById('navCard');
+  var navProgress = document.getElementById('navProgress');
+  var navMiniAtc  = document.getElementById('navMiniAtc');
+  var splitHero   = document.getElementById('splitHero');
+
+  if (navCard && splitHero) {
+    /* Populate nav product info */
+    var navProdName  = document.getElementById('navProductName');
+    var navProdPrice = document.getElementById('navProductPrice');
+    if (navProdName)  navProdName.textContent = {{ product.title | json }};
+    if (navProdPrice) navProdPrice.textContent = {{ current_variant.price | money_without_trailing_zeros | json }};
+
+    var navRaf = null;
+    window.addEventListener('scroll', function() {
+      if (navRaf) return;
+      navRaf = requestAnimationFrame(function() {
+        navRaf = null;
+        var scrollY   = window.scrollY;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+        /* Progress bar */
+        if (navProgress) navProgress.style.width = (scrollY / docHeight * 100) + '%';
+
+        /* Trigger scrolled state when hero bottom leaves viewport */
+        var heroBottom = splitHero.getBoundingClientRect().bottom;
+        navCard.classList.toggle('nav-scrolled', heroBottom < 100);
+      });
+    }, { passive: true });
+
+    /* Mini ATC mirrors main ATC */
+    if (navMiniAtc) {
+      navMiniAtc.addEventListener('click', function() {
+        if (navMiniAtc.classList.contains('success')) return;
+        /* Trigger main ATC click */
+        if (atcBtn) atcBtn.click();
+        /* Mirror success state after a tick (let main ATC process first) */
+        setTimeout(function() {
+          if (atcBtn && atcBtn.classList.contains('success')) {
+            navMiniAtc.classList.add('success');
+            navMiniAtc.textContent = 'ADDED \u2713';
+            setTimeout(function() {
+              navMiniAtc.classList.remove('success');
+              navMiniAtc.textContent = 'Add to Cart';
+            }, 2200);
+          }
+        }, 50);
+      });
+    }
+  }
+
+  /* ── Landscape image detection ── */
+  (function() {
+    function tagLandscape(img) {
+      if (img.naturalWidth > 0) {
+        img.classList.toggle('landscape', img.naturalWidth > img.naturalHeight);
+      }
+    }
+    document.querySelectorAll('.product-img').forEach(function(img) {
+      if (img.complete) { tagLandscape(img); }
+      else { img.addEventListener('load', function() { tagLandscape(img); }, { once: true }); }
+    });
+  })();
+
+  /* ── Description show more / show less ── */
+  (function() {
+    var descText   = document.getElementById('descText');
+    var descToggle = document.getElementById('descToggle');
+    if (!descText || !descToggle) return;
+
+    /* Hide button if text isn't actually clamped */
+    function checkClamp() {
+      if (descText.scrollHeight <= descText.clientHeight + 2) {
+        descToggle.classList.add('hidden');
+      }
+    }
+    /* Run after fonts/images settle */
+    if (document.fonts) {
+      document.fonts.ready.then(checkClamp);
+    } else {
+      setTimeout(checkClamp, 400);
+    }
+
+    descToggle.addEventListener('click', function() {
+      var expanded = descText.classList.toggle('expanded');
+      descToggle.textContent = expanded ? 'Show less' : 'Show more';
+      descToggle.setAttribute('aria-expanded', expanded);
+    });
+  })();
+
+  /* Wishlist toggle is now handled by cart.js (AIW.toggleWishlist) */
+
+  /* ── Scroll reveal ── */
+  var revealEls = document.querySelectorAll('.reveal, .slide-left, .slide-right, .scale-up, .fade-in, .stagger');
+  if (!prefersReduced) {
+    var revealObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          revealObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(function(el) { revealObserver.observe(el); });
+  } else {
+    revealEls.forEach(function(el) { el.classList.add('visible'); });
+  }
+
+  /* ── Load related products via AJAX (Shopify recommendations) ── */
+  var relatedCard = document.getElementById('relatedProducts');
+  if (relatedCard && relatedCard.dataset.url) {
+    fetch(relatedCard.dataset.url)
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+        var newScroll = doc.querySelector('.related-scroll');
+        var targetScroll = document.getElementById('relatedScroll');
+        if (newScroll && newScroll.children.length > 0 && targetScroll) {
+          while (targetScroll.firstChild) targetScroll.removeChild(targetScroll.firstChild);
+          while (newScroll.firstChild) targetScroll.appendChild(newScroll.firstChild);
+        }
+      })
+      .catch(function() {});
+  }
+  /* ── Pinch-to-zoom on product image (mobile only) ── */
+  (function() {
+    if (window.matchMedia('(pointer: fine)').matches) return;
+    var el  = document.getElementById('productTilt');
+    var img = document.getElementById('mainProductImage');
+    if (!el || !img) return;
+
+    var scale = 1, startDist = 0, startScale = 1;
+    var originX = 50, originY = 50;
+
+    function dist(t) {
+      var dx = t[0].clientX - t[1].clientX;
+      var dy = t[0].clientY - t[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function midpoint(t) {
+      var rect = el.getBoundingClientRect();
+      return {
+        x: ((t[0].clientX + t[1].clientX) / 2 - rect.left) / rect.width * 100,
+        y: ((t[0].clientY + t[1].clientY) / 2 - rect.top)  / rect.height * 100
+      };
+    }
+    function apply() {
+      img.style.transformOrigin = originX + '% ' + originY + '%';
+      img.style.transform = scale > 1 ? 'scale(' + scale + ')' : '';
+      el.style.cursor = scale > 1 ? 'grab' : '';
+    }
+    function reset() {
+      scale = 1; apply();
+    }
+
+    el.addEventListener('touchstart', function(e) {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        startDist  = dist(e.touches);
+        startScale = scale;
+        var m = midpoint(e.touches);
+        originX = m.x; originY = m.y;
+      }
+    }, { passive: false });
+
+    el.addEventListener('touchmove', function(e) {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        scale = Math.min(4, Math.max(1, startScale * (dist(e.touches) / startDist)));
+        apply();
+      }
+    }, { passive: false });
+
+    el.addEventListener('touchend', function(e) {
+      if (e.touches.length < 2 && scale < 1.05) reset();
+    }, { passive: true });
+
+    /* Double-tap to toggle zoom */
+    var lastTap = 0;
+    el.addEventListener('touchend', function(e) {
+      var now = Date.now();
+      if (now - lastTap < 300) {
+        e.preventDefault();
+        if (scale > 1) { reset(); }
+        else {
+          var rect = el.getBoundingClientRect();
+          originX = (e.changedTouches[0].clientX - rect.left) / rect.width * 100;
+          originY = (e.changedTouches[0].clientY - rect.top)  / rect.height * 100;
+          scale = 2.5; apply();
+        }
+      }
+      lastTap = now;
+    }, { passive: false });
+  })();
+
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Product Main",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "related_heading",
+      "label": "Related products heading",
+      "default": "Complete the Look"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "detail_card",
+      "name": "Detail Card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Product Details"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "trust_badge",
+      "name": "Trust Badge",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Badge text",
+          "default": "Free shipping $75+"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Main",
+      "blocks": [
+        { "type": "detail_card", "settings": { "title": "Product Details", "text": "6.5oz heavyweight cotton. Garment-washed before it ships — already broken in on day one. Reinforced collar, double-stitched hems." } },
+        { "type": "detail_card", "settings": { "title": "Fabric & Fit", "text": "100% organic cotton. 220 GSM. Big enough to layer, fitted enough to wear solo. Size down for structure, true size for the drape." } },
+        { "type": "detail_card", "settings": { "title": "Care & Shipping", "text": "Wash cold, tumble low. Pre-shrunk. Free shipping over $75. 30-day returns." } },
+        { "type": "trust_badge", "settings": { "text": "Free shipping $75+" } },
+        { "type": "trust_badge", "settings": { "text": "Free returns" } },
+        { "type": "trust_badge", "settings": { "text": "Ships in 2–3 days" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

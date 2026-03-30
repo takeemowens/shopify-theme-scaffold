@@ -1,0 +1,519 @@
+{%- comment -%}
+  ═══════════════════════════════════════════════════════════
+  COLLECTION PRODUCT GRID v2 — Editorial Layout
+  ═══════════════════════════════════════════════════════════
+  Minimal luxury. Image-forward. Mixed editorial grid.
+  Hooks into motion.js scroll reveals (.reveal, .fade-in,
+  .stagger, [data-parallax]) — no custom GSAP needed.
+
+  Grid pattern (repeats every 8 products):
+    Position 0:     Hero — full width, 16:7 cinematic
+    Position 1–2:   Duo  — 50/50, 4:5 portrait
+    Position 3–5:   Trio — thirds, 3:4 portrait
+    Position 6–7:   Duo  — 50/50, 4:5 portrait
+
+  Design tokens: base.css :root
+  Motion: motion.js (GSAP + ScrollTrigger + Lenis)
+  ═══════════════════════════════════════════════════════════
+{%- endcomment -%}
+
+{%- paginate collection.products by 24 -%}
+
+<div class="cpg2" style="margin-top: var(--gap);">
+
+  {%- comment -%} ── Toolbar ── {%- endcomment -%}
+  <div class="cpg2-toolbar reveal">
+    <div class="cpg2-toolbar__left">
+      <span class="cpg2-toolbar__count">{{ collection.products_count }}</span>
+      <span class="cpg2-toolbar__label">{{ collection.products_count | pluralize: 'Piece', 'Pieces' }}</span>
+    </div>
+    <div class="cpg2-toolbar__right">
+      <select class="cpg2-toolbar__sort" aria-label="Sort products" onchange="location.assign('?sort_by=' + this.value)">
+        <option value="manual"{% if collection.sort_by == 'manual' %} selected{% endif %}>Curated</option>
+        <option value="best-selling"{% if collection.sort_by == 'best-selling' %} selected{% endif %}>Best Sellers</option>
+        <option value="created-descending"{% if collection.sort_by == 'created-descending' %} selected{% endif %}>New Arrivals</option>
+        <option value="price-ascending"{% if collection.sort_by == 'price-ascending' %} selected{% endif %}>Price &uarr;</option>
+        <option value="price-descending"{% if collection.sort_by == 'price-descending' %} selected{% endif %}>Price &darr;</option>
+      </select>
+    </div>
+  </div>
+
+  {%- comment -%} ── Product Grid ── {%- endcomment -%}
+  <div class="cpg2-grid">
+
+    {%- for product in collection.products -%}
+      {%- comment -%} Grid layout class {%- endcomment -%}
+      {%- assign pos = forloop.index0 | modulo: 8 -%}
+      {%- case pos -%}
+        {%- when 0 -%}{%- assign layout = 'hero' -%}
+        {%- when 1 or 2 -%}{%- assign layout = 'duo' -%}
+        {%- when 3 or 4 or 5 -%}{%- assign layout = 'trio' -%}
+        {%- when 6 or 7 -%}{%- assign layout = 'duo' -%}
+      {%- endcase -%}
+
+      {%- assign has_alt = false -%}
+      {%- if product.images.size > 1 -%}{%- assign has_alt = true -%}{%- endif -%}
+
+      {%- comment -%} Color option detection {%- endcomment -%}
+      {%- assign color_idx = nil -%}
+      {%- for option in product.options -%}
+        {%- assign opt_lc = option | downcase -%}
+        {%- if opt_lc == 'color' or opt_lc == 'colour' -%}
+          {%- assign color_idx = forloop.index0 -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      <article class="cpg2-item cpg2-item--{{ layout }} reveal">
+        <a href="{{ product.url }}" class="cpg2-item__link" aria-label="{{ product.title | escape }}">
+
+          {%- comment -%} ── Images ── {%- endcomment -%}
+          <div class="cpg2-item__media">
+            <div class="cpg2-item__img cpg2-item__img--a">
+              {%- if product.featured_image != blank -%}
+                <img
+                  src="{{ product.featured_image | image_url: width: 1200 }}"
+                  srcset="{{ product.featured_image | image_url: width: 400 }} 400w,
+                         {{ product.featured_image | image_url: width: 800 }} 800w,
+                         {{ product.featured_image | image_url: width: 1200 }} 1200w"
+                  sizes="{% if layout == 'hero' %}100vw{% elsif layout == 'trio' %}(max-width:900px) 50vw, 33vw{% else %}(max-width:900px) 100vw, 50vw{% endif %}"
+                  alt="{{ product.featured_image.alt | default: product.title | escape }}"
+                  loading="{% if forloop.index <= 3 %}eager{% else %}lazy{% endif %}"
+                  decoding="async"
+                  width="{{ product.featured_image.width }}"
+                  height="{{ product.featured_image.height }}"
+                >
+              {%- else -%}
+                <div class="cpg2-item__ph" style="background:var(--ph{{ forloop.index | modulo: 4 | plus: 1 }})"></div>
+              {%- endif -%}
+            </div>
+            {%- if has_alt -%}
+              <div class="cpg2-item__img cpg2-item__img--b">
+                <img
+                  src="{{ product.images[1] | image_url: width: 1200 }}"
+                  srcset="{{ product.images[1] | image_url: width: 400 }} 400w,
+                         {{ product.images[1] | image_url: width: 800 }} 800w,
+                         {{ product.images[1] | image_url: width: 1200 }} 1200w"
+                  sizes="{% if layout == 'hero' %}100vw{% elsif layout == 'trio' %}33vw{% else %}50vw{% endif %}"
+                  alt="{{ product.images[1].alt | default: product.title | escape }}"
+                  loading="lazy"
+                  decoding="async"
+                  width="{{ product.images[1].width }}"
+                  height="{{ product.images[1].height }}"
+                >
+              </div>
+            {%- endif -%}
+          </div>
+
+          {%- comment -%} ── Gradient ── {%- endcomment -%}
+          <div class="cpg2-item__overlay"></div>
+
+          {%- comment -%} ── Badge ── {%- endcomment -%}
+          {%- if product.available == false -%}
+            <span class="cpg2-item__badge cpg2-item__badge--sold">Sold Out</span>
+          {%- elsif product.compare_at_price > product.price -%}
+            <span class="cpg2-item__badge cpg2-item__badge--sale">Sale</span>
+          {%- endif -%}
+
+          {%- comment -%} ── Info (overlaid bottom-left) ── {%- endcomment -%}
+          <div class="cpg2-item__info">
+            <div class="cpg2-item__text">
+              {%- if product.type != blank -%}
+                <span class="cpg2-item__type">{{ product.type }}</span>
+              {%- endif -%}
+              <h3 class="cpg2-item__name">{{ product.title }}</h3>
+            </div>
+            <div class="cpg2-item__bottom">
+              <span class="cpg2-item__price">
+                {%- if product.compare_at_price > product.price -%}
+                  <s>{{ product.compare_at_price | money_without_trailing_zeros }}</s>
+                  {{ product.price | money_without_trailing_zeros }}
+                {%- else -%}
+                  {{ product.price | money_without_trailing_zeros }}
+                {%- endif -%}
+              </span>
+              {%- if color_idx != nil -%}
+                {%- assign shown = '' -%}
+                <span class="cpg2-item__dots">
+                  {%- for variant in product.variants -%}
+                    {%- assign vc = variant.options[color_idx] -%}
+                    {%- unless shown contains vc -%}
+                      {%- assign ch = vc | handleize -%}
+                      {%- case ch -%}
+                        {%- when 'onyx' or 'black' -%}{%- assign hex = '#1A1615' -%}
+                        {%- when 'bone' or 'white' -%}{%- assign hex = '#F5F0E8' -%}
+                        {%- when 'cream' -%}{%- assign hex = '#FFF8E7' -%}
+                        {%- when 'navy' -%}{%- assign hex = '#1C2A3A' -%}
+                        {%- when 'charcoal' -%}{%- assign hex = '#3A3A3A' -%}
+                        {%- when 'charcoal-blue' -%}{%- assign hex = '#2E3A4A' -%}
+                        {%- when 'olive' or 'olive-green' -%}{%- assign hex = '#4A5A3A' -%}
+                        {%- when 'sage' -%}{%- assign hex = '#8A9A7B' -%}
+                        {%- when 'camel' -%}{%- assign hex = '#C19A6B' -%}
+                        {%- when 'sand' or 'mushroom' -%}{%- assign hex = '#C4B39A' -%}
+                        {%- when 'earth' -%}{%- assign hex = '#8A7356' -%}
+                        {%- else -%}{%- assign hex = '#888' -%}
+                      {%- endcase -%}
+                      <span class="cpg2-dot" style="background:{{ hex }}" title="{{ vc }}"></span>
+                      {%- assign shown = shown | append: vc | append: ',' -%}
+                    {%- endunless -%}
+                  {%- endfor -%}
+                </span>
+              {%- endif -%}
+              <span class="cpg2-item__arrow">&rarr;</span>
+            </div>
+          </div>
+
+        </a>
+      </article>
+
+    {%- else -%}
+      <p class="cpg2-empty">This collection is empty.</p>
+    {%- endfor -%}
+
+  </div>
+
+  {%- comment -%} ── Pagination ── {%- endcomment -%}
+  {%- if paginate.pages > 1 -%}
+    <nav class="cpg2-pages reveal" aria-label="Pagination">
+      {{ paginate | default_pagination }}
+    </nav>
+  {%- endif -%}
+
+</div>
+
+{%- endpaginate -%}
+
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   COLLECTION GRID v2 — Minimal Luxury Editorial
+   Tokens: base.css  |  Motion: motion.js
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+.cpg2-toolbar {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-7);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--gap);
+}
+.cpg2-toolbar__left {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.cpg2-toolbar__count {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: var(--tracking-tight);
+}
+.cpg2-toolbar__label {
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--dim);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+.cpg2-toolbar__sort {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-9) var(--space-2) var(--space-4);
+  font-family: var(--font);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-normal);
+  text-transform: uppercase;
+  color: var(--cream);
+  cursor: pointer;
+  outline: none;
+  border-radius: var(--radius-sm);
+  transition: border-color var(--duration-fast);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23C4A87A'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+}
+.cpg2-toolbar__sort:focus { border-color: rgba(var(--earth-rgb),0.4); }
+.cpg2-toolbar__sort option { background: var(--card-bg2); color: var(--cream); }
+
+/* ── Grid ────────────────────────────────────────────────── */
+.cpg2-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--gap);
+}
+.cpg2-item--hero { grid-column: 1 / -1; }
+.cpg2-item--duo  { grid-column: span 3; }
+.cpg2-item--trio { grid-column: span 2; }
+
+@media (max-width: 900px) {
+  .cpg2-grid { grid-template-columns: repeat(2, 1fr); }
+  .cpg2-item--hero { grid-column: 1 / -1; }
+  .cpg2-item--duo  { grid-column: span 1; }
+  .cpg2-item--trio { grid-column: span 1; }
+}
+@media (max-width: 560px) {
+  .cpg2-grid { gap: var(--space-3); }
+}
+
+/* ── Card ────────────────────────────────────────────────── */
+.cpg2-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--card-bg2);
+}
+.cpg2-item__link {
+  display: block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+}
+
+/* Aspect ratios */
+.cpg2-item--hero .cpg2-item__link { aspect-ratio: 21 / 9; }
+.cpg2-item--duo  .cpg2-item__link { aspect-ratio: 4 / 5; }
+.cpg2-item--trio .cpg2-item__link { aspect-ratio: 3 / 4; }
+
+@media (max-width: 900px) {
+  .cpg2-item--hero .cpg2-item__link { aspect-ratio: 16 / 9; }
+}
+@media (max-width: 560px) {
+  .cpg2-item--hero .cpg2-item__link { aspect-ratio: 3 / 4; }
+  .cpg2-item--duo  .cpg2-item__link { aspect-ratio: 3 / 4; }
+  .cpg2-item--trio .cpg2-item__link { aspect-ratio: 3 / 4; }
+  .cpg2-item { border-radius: var(--radius-sm); }
+}
+
+/* ── Images ──────────────────────────────────────────────── */
+.cpg2-item__media {
+  position: absolute;
+  inset: 0;
+}
+.cpg2-item__img {
+  position: absolute;
+  inset: 0;
+}
+.cpg2-item__img img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 1.4s var(--ease-out-expo);
+}
+.cpg2-item__img--a { z-index: 1; }
+.cpg2-item__img--b {
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--duration-slow) ease;
+}
+.cpg2-item__ph { width: 100%; height: 100%; }
+
+/* Hover — slow zoom on primary, crossfade to secondary */
+.cpg2-item:hover .cpg2-item__img--a img { transform: scale(1.06); }
+.cpg2-item:hover .cpg2-item__img--b     { opacity: 1; }
+
+/* ── Gradient Overlay ────────────────────────────────────── */
+.cpg2-item__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(to top,
+      rgba(var(--overlay-dark), 0.88) 0%,
+      rgba(var(--overlay-dark), 0.35) 35%,
+      rgba(var(--overlay-dark), 0.05) 60%,
+      transparent 100%);
+  transition: opacity var(--duration-med) ease;
+}
+
+/* ── Badge ───────────────────────────────────────────────── */
+.cpg2-item__badge {
+  position: absolute;
+  top: var(--space-5); right: var(--space-5);
+  z-index: 5;
+  font-family: var(--font);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-xs);
+}
+.cpg2-item__badge--sale { background: var(--sale); color: var(--white); }
+.cpg2-item__badge--sold {
+  background: rgba(0,0,0,0.3);
+  color: var(--muted);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+}
+
+/* ── Overlaid Info ───────────────────────────────────────── */
+.cpg2-item__info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 4;
+  padding: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cpg2-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.cpg2-item__type {
+  font-family: var(--font);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--earth);
+  opacity: 0.85;
+}
+.cpg2-item__name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--cream);
+  margin: 0;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+.cpg2-item--hero .cpg2-item__name { font-size: clamp(1.25rem, 2.5vw, 2rem); }
+.cpg2-item--duo  .cpg2-item__name { font-size: clamp(0.9375rem, 1.8vw, 1.25rem); }
+.cpg2-item--trio .cpg2-item__name { font-size: clamp(0.8125rem, 1.2vw, 1rem); }
+
+.cpg2-item__bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.cpg2-item__price {
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: rgba(255,255,255,0.65);
+  letter-spacing: var(--tracking-tight);
+}
+.cpg2-item__price s {
+  color: var(--dim);
+  margin-right: var(--space-2);
+  font-weight: 400;
+}
+
+/* Color dots */
+.cpg2-item__dots {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+.cpg2-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.18);
+  flex-shrink: 0;
+}
+
+/* Arrow — slides in on hover */
+.cpg2-item__arrow {
+  font-size: var(--text-md);
+  color: var(--earth);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity var(--duration-med) ease,
+    transform var(--duration-med) var(--ease-out-expo);
+  margin-left: auto;
+}
+.cpg2-item:hover .cpg2-item__arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Mobile info ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cpg2-item__info { padding: var(--space-5); }
+  .cpg2-item__arrow { opacity: 0.6; transform: translateX(0); }
+}
+@media (max-width: 560px) {
+  .cpg2-item__info { padding: var(--space-4); gap: var(--space-1); }
+  .cpg2-item__name { font-size: var(--text-md); }
+  .cpg2-item__price { font-size: var(--text-sm); }
+  .cpg2-item__bottom { gap: var(--space-2); }
+  .cpg2-dot { width: 8px; height: 8px; }
+  .cpg2-toolbar { padding: var(--space-3) var(--space-5); }
+}
+
+/* ── Pagination ──────────────────────────────────────────── */
+.cpg2-pages {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  margin-top: var(--gap);
+  padding: var(--space-5) var(--space-7);
+  text-align: center;
+}
+.cpg2-pages .pagination {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+.cpg2-pages a,
+.cpg2-pages span:not(.deco) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--space-10); height: var(--space-10);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  color: var(--cream);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: border-color var(--duration-fast), background var(--duration-fast);
+  padding: 0 var(--space-2);
+}
+.cpg2-pages a:hover { border-color: var(--border-em); background: var(--card-bg2); }
+.cpg2-pages .current { border-color: var(--earth); color: var(--earth); font-weight: 600; }
+.cpg2-pages .next,
+.cpg2-pages .prev {
+  letter-spacing: var(--tracking-normal);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0 var(--space-4);
+}
+
+/* ── Empty ───────────────────────────────────────────────── */
+.cpg2-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--space-16) 0;
+  font-family: var(--font);
+  font-size: var(--text-md);
+  color: var(--muted);
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .cpg2-item__img img { transition: none; }
+  .cpg2-item__arrow { opacity: 0.6; transform: none; transition: none; }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Collection Grid v2",
+  "settings": [],
+  "presets": [{ "name": "Collection Grid v2" }]
+}
+{% endschema %}

@@ -1,0 +1,1005 @@
+{%- style -%}
+  .nav-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 58px;
+    position: sticky;
+    top: 28px;
+    z-index: 200;
+    overflow: hidden;
+    transition: height 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease, background 0.4s ease;
+  }
+  .nav-card.nav-scrolled {
+    background: rgba(26,20,10,0.96);
+    box-shadow: 0 8px 36px rgba(0,0,0,0.55), 0 1px 0 rgba(196,168,122,0.12);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  }
+  .nav-card.nav-scrolled::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 1px; background: rgba(196,168,122,0.18);
+  }
+  .nav-left  { display: flex; align-items: center; gap: 36px; }
+  .nav-logo {
+    font-family: var(--font-display); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: var(--cream); white-space: nowrap; flex-shrink: 0;
+  }
+  .nav-logo a { color: inherit; text-decoration: none; }
+
+  /* Back link — PDP only */
+  .nav-back {
+    font-family: var(--font-display);
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--cream); white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.3s, transform 0.3s;
+    text-decoration: none; flex-shrink: 0;
+  }
+  .nav-back:hover { color: var(--white); transform: translateX(-3px); }
+
+  .nav-links { display: flex; gap: 24px; list-style: none; }
+  .nav-links a {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    transition: color 0.3s; position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1px; background: var(--cream);
+    transition: width 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .nav-links a:hover { color: var(--cream); }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+  .nav-icon {
+    width: 18px; height: 18px; cursor: pointer;
+    opacity: 0.45; transition: opacity 0.3s, transform 0.2s;
+    color: var(--cream);
+  }
+  .nav-icon:hover { opacity: 1; transform: scale(1.1); }
+  .cart-count {
+    font-size: 10px; font-weight: 700; background: var(--earth);
+    color: var(--card-bg); border-radius: 50%; width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: -6px; right: -8px;
+  }
+  .nav-cart-wrap { position: relative; display: flex; }
+  .nav-search-btn {
+    background: none; border: none; padding: 0;
+    display: flex; align-items: center;
+  }
+  .nav-wishlist-btn {
+    background: none; border: none; padding: 0;
+    display: flex; align-items: center;
+  }
+
+  /* Mobile nav adjustments */
+  @media (max-width: 900px) {
+    .nav-card { top: 14px; padding: 0 24px; }
+    .nav-links { display: none; }
+    .nav-card.nav-scrolled .nav-right .nav-search-btn,
+    .nav-card.nav-scrolled .nav-right .nav-wishlist-btn { display: none; }
+  }
+  @media (max-width: 560px) {
+    .nav-card { top: 10px; height: 50px; padding: 0 20px; border-radius: 12px; }
+  }
+
+  /* ── Hamburger button (mobile only, inside nav) ── */
+  .nav-burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 36px; height: 36px;
+    background: none; border: none; cursor: pointer;
+    padding: 0; flex-shrink: 0;
+  }
+  @media (max-width: 900px) { .nav-burger { display: flex; } }
+  .nav-burger__line {
+    display: block;
+    width: 18px; height: 1.5px;
+    background: var(--cream);
+    opacity: 0.65;
+    transform-origin: center;
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.2s ease, width 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .nav-burger.is-open .nav-burger__line:nth-child(1) { transform: translateY(6.5px) rotate(45deg); opacity: 0.9; }
+  .nav-burger.is-open .nav-burger__line:nth-child(2) { opacity: 0; width: 0; }
+  .nav-burger.is-open .nav-burger__line:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); opacity: 0.9; }
+
+  /* ── Mobile menu overlay ── */
+  .mob-overlay {
+    position: fixed; inset: 0; z-index: 250;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .mob-overlay.is-open { opacity: 1; pointer-events: all; }
+
+  /* ── Mobile menu panel ── */
+  .mob-menu {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 88vw; max-width: 360px;
+    z-index: 251;
+    background: var(--card-bg);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    display: flex; flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.42s cubic-bezier(0.16,1,0.3,1);
+    overflow: hidden;
+  }
+  .mob-menu.is-open { transform: translateX(0); }
+  .mob-menu__header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .mob-menu__wordmark {
+    font-family: var(--font-display);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--cream);
+  }
+  .mob-menu__close {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 4px;
+    display: flex; align-items: center;
+    transition: color 0.2s;
+  }
+  .mob-menu__close:hover { color: var(--cream); }
+  .mob-menu__close svg { width: 20px; height: 20px; }
+  .mob-menu__nav {
+    flex: 1; overflow-y: auto;
+    padding: 32px 28px;
+  }
+  .mob-menu__nav ul { list-style: none; display: flex; flex-direction: column; gap: 0; }
+  .mob-menu__nav a {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: rgba(255,249,239,0.4);
+    text-decoration: none;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: color 0.25s ease;
+  }
+  .mob-menu__nav a:hover { color: var(--cream); }
+  .mob-menu__nav li:last-child a { border-bottom: none; }
+  .mob-menu__footer {
+    padding: 20px 28px 32px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    flex-shrink: 0;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  /* ── Wishlist badge ── */
+  .wishlist-count {
+    font-size: 10px; font-weight: 700; background: var(--earth);
+    color: var(--card-bg); border-radius: 50%; width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: -6px; right: -8px;
+  }
+  .nav-wishlist-btn { position: relative; }
+
+  /* ── Toast Notifications ── */
+  .aiw-toast-container {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+    display: flex; flex-direction: column-reverse;
+    gap: 8px; pointer-events: none;
+  }
+  .aiw-toast {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+    color: var(--cream);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: auto;
+    white-space: nowrap;
+  }
+  .aiw-toast--show { opacity: 1; transform: translateY(0); }
+  .aiw-toast__icon { font-size: 14px; }
+  .aiw-toast--success .aiw-toast__icon { color: var(--earth); }
+  .aiw-toast--error .aiw-toast__icon { color: #e55; }
+  .aiw-toast--wishlist .aiw-toast__icon { color: #e88; }
+
+  /* ── Drawer (shared cart + wishlist) ── */
+  .drawer-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .drawer-overlay.is-open { opacity: 1; pointer-events: all; }
+
+  .drawer-panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 420px; max-width: 92vw;
+    z-index: 401;
+    background: var(--card-bg);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  .drawer-panel.is-open { transform: translateX(0); }
+
+  .drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .drawer-header__title {
+    font-family: var(--font-display);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cream);
+  }
+  .drawer-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 4px;
+    transition: color 0.2s;
+    display: flex; align-items: center;
+  }
+  .drawer-close:hover { color: var(--cream); }
+  .drawer-close svg { width: 18px; height: 18px; }
+
+  .drawer-body {
+    flex: 1; overflow-y: auto;
+    padding: 16px 24px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .drawer-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .drawer-subtotal {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 16px;
+  }
+  .drawer-subtotal__label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .drawer-subtotal__price {
+    font-size: 16px; font-weight: 700; color: var(--cream);
+  }
+
+  /* Cart/Wishlist drawer items */
+  .cd-item {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 14px; align-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .cd-item:last-child { border-bottom: none; }
+  .cd-item__img {
+    width: 64px; height: 80px;
+    border-radius: 6px; overflow: hidden;
+    background: var(--card-bg2);
+  }
+  .cd-item__img img { width: 100%; height: 100%; object-fit: cover; }
+  .cd-item__title {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--cream); text-decoration: none;
+    display: block; margin-bottom: 2px;
+  }
+  .cd-item__variant {
+    font-size: 10px; color: var(--muted); margin-bottom: 8px;
+  }
+  .cd-item__qty-row {
+    display: flex; align-items: center; gap: 0;
+    border: 1px solid var(--border); border-radius: 6px;
+    width: fit-content;
+  }
+  .cd-qty-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 14px;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s;
+  }
+  .cd-qty-btn:hover { color: var(--cream); }
+  .cd-qty-val {
+    font-size: 11px; font-weight: 600; color: var(--cream);
+    min-width: 20px; text-align: center;
+  }
+  .cd-item__right {
+    display: flex; flex-direction: column;
+    align-items: flex-end; gap: 8px;
+  }
+  .cd-item__price {
+    font-size: 13px; font-weight: 700; color: var(--earth);
+  }
+  .cd-item__remove {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 16px;
+    transition: color 0.2s; padding: 0;
+    line-height: 1;
+  }
+  .cd-item__remove:hover { color: var(--cream); }
+
+  .drawer-empty {
+    text-align: center; padding: 48px 0;
+    color: var(--muted); font-size: 13px;
+  }
+  .drawer-empty a {
+    display: inline-block; margin-top: 16px;
+    padding: 12px 28px;
+    background: var(--earth); color: var(--card-bg);
+    border-radius: 8px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    transition: background 0.3s;
+  }
+  .drawer-empty a:hover { background: var(--white); }
+
+  .btn-earth {
+    display: block; width: 100%;
+    padding: 14px 24px;
+    background: var(--earth); color: var(--card-bg);
+    border: none; border-radius: 8px;
+    font-family: var(--font-display); font-size: 11px;
+    font-weight: 700; letter-spacing: 0.20em;
+    text-transform: uppercase; cursor: pointer;
+    text-align: center; text-decoration: none;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .btn-earth:hover { background: var(--white); transform: translateY(-1px); }
+
+  @media (max-width: 560px) {
+    .drawer-panel { width: 100%; max-width: 100%; }
+    .aiw-toast-container { bottom: 16px; width: calc(100% - 32px); }
+    .aiw-toast { white-space: normal; }
+  }
+
+  /* ── Search overlay ── */
+  .search-overlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(4,2,0,0.72);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .search-overlay.is-open { opacity: 1; pointer-events: all; }
+
+  /* ── Search drawer ── */
+  .search-drawer {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 301;
+    background: var(--card-bg2);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transform: translateY(-100%);
+    transition: transform 0.42s cubic-bezier(0.16,1,0.3,1);
+  }
+  .search-drawer.is-open { transform: translateY(0); }
+
+  /* ── Input row ── */
+  .search-drawer-inner {
+    max-width: 800px; margin: 0 auto;
+    display: flex; align-items: center; gap: 20px;
+    padding: 32px var(--page-padding) 28px;
+  }
+
+  /* Form — minimal underline, no boxy container */
+  .search-drawer form {
+    flex: 1;
+    display: flex; align-items: center; gap: 14px;
+    background: none; border: none; border-radius: 0;
+    padding: 0 0 12px;
+    position: relative;
+  }
+  /* Baseline — thin cream line */
+  .search-drawer form::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: rgba(255,249,239,0.10);
+  }
+  /* Earth accent line — grows from left on focus */
+  .search-drawer form::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 1px;
+    background: var(--earth);
+    transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .search-drawer form:focus-within::after { width: 100%; }
+
+  /* Search icon — dim until focused */
+  .search-drawer form svg.search-icon {
+    width: 17px; height: 17px;
+    color: rgba(255,249,239,0.25);
+    flex-shrink: 0;
+    transition: color 0.3s;
+    stroke-width: 1.5;
+  }
+  .search-drawer form:focus-within svg.search-icon { color: var(--earth); }
+
+  /* THE FIX — body font, light weight, zero excess tracking */
+  .search-drawer input[type="search"] {
+    flex: 1;
+    background: none; border: none; outline: none;
+    color: var(--cream);
+    font-family: var(--font);
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: 0;
+    height: 44px;
+    caret-color: var(--earth);
+  }
+  .search-drawer input[type="search"]::placeholder {
+    color: rgba(255,249,239,0.20);
+    font-weight: 300;
+  }
+  .search-drawer input[type="search"]::-webkit-search-cancel-button { display: none; }
+
+  /* Close button */
+  .search-close {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,249,239,0.25); padding: 6px; flex-shrink: 0;
+    display: flex; align-items: center;
+    transition: color 0.2s, transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  .search-close:hover { color: var(--cream); transform: rotate(90deg); }
+  .search-close svg { width: 18px; height: 18px; stroke-width: 1.5; }
+
+  /* ── Predictive results panel ── */
+  .search-results-panel {
+    max-width: 800px; margin: 0 auto;
+    padding: 0 var(--page-padding) 36px;
+    display: none;
+  }
+  .search-results-panel.has-results { display: block; }
+
+  /* Divider */
+  .search-results-panel::before {
+    content: '';
+    display: block;
+    height: 1px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 28px;
+  }
+
+  /* Product grid */
+  .search-pred-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 900px) { .search-pred-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .search-pred-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+  .search-pred-item {
+    text-decoration: none; color: inherit;
+    display: block;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: border-color 0.25s, transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    outline-offset: 3px;
+  }
+  .search-pred-item:hover,
+  .search-pred-item:focus {
+    border-color: rgba(196,168,122,0.35);
+    transform: translateY(-3px);
+  }
+  .search-pred-item.is-active { border-color: rgba(196,168,122,0.35); }
+
+  .search-pred-img {
+    aspect-ratio: 3/4; overflow: hidden;
+    background: rgba(255,255,255,0.03);
+  }
+  .search-pred-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
+  }
+  .search-pred-item:hover .search-pred-img img { transform: scale(1.06); }
+
+  .search-pred-body { padding: 11px 13px 13px; }
+  .search-pred-name {
+    font-family: var(--font-display); font-size: 10px;
+    font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--cream);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+  .search-pred-price {
+    font-family: var(--font);
+    font-size: 11px; color: var(--earth);
+    font-weight: 400; letter-spacing: 0.04em;
+  }
+
+  /* Footer */
+  .search-pred-footer {
+    margin-top: 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .search-pred-count {
+    font-family: var(--font);
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,249,239,0.30);
+  }
+  .search-pred-all {
+    font-family: var(--font-display); font-size: 10px;
+    font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--earth); text-decoration: none;
+    display: flex; align-items: center; gap: 7px;
+    transition: gap 0.25s cubic-bezier(0.16,1,0.3,1), color 0.2s;
+  }
+  .search-pred-all:hover { gap: 12px; color: var(--cream); }
+
+  /* Empty / loading states */
+  .search-pred-empty {
+    font-family: var(--font);
+    font-size: 13px; font-weight: 300;
+    color: rgba(255,249,239,0.30);
+    letter-spacing: 0.04em; padding: 4px 0 8px;
+  }
+  .search-pred-spinner {
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-top-color: var(--earth);
+    border-radius: 50%;
+    animation: searchSpin 0.7s linear infinite;
+    display: none;
+  }
+  .search-drawer form.is-loading .search-pred-spinner { display: block; }
+  .search-drawer form.is-loading svg.search-icon { display: none; }
+  @keyframes searchSpin { to { transform: rotate(360deg); } }
+  @media (max-width: 560px) {
+    .search-drawer-inner { padding: 24px var(--page-padding) 20px; }
+    .search-drawer input[type="search"] { font-size: 16px; }
+  }
+{%- endstyle -%}
+
+<!-- Search Overlay -->
+<div class="search-overlay" id="search-overlay" aria-hidden="true"></div>
+
+<!-- Search Drawer -->
+<div class="search-drawer" id="search-drawer" role="dialog" aria-label="Search" aria-hidden="true">
+  <div class="search-drawer-inner">
+    <form action="/search" method="get" role="search" id="search-form">
+      <input type="hidden" name="type" value="product">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <div class="search-pred-spinner" aria-hidden="true"></div>
+      <input
+        type="search"
+        name="q"
+        id="search-input"
+        placeholder="What are you looking for?"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        aria-label="Search products"
+        aria-autocomplete="list"
+        aria-controls="search-pred-results"
+      >
+    </form>
+    <button class="search-close" id="search-close" aria-label="Close search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  <!-- Predictive results -->
+  <div class="search-results-panel" id="search-pred-panel" role="region" aria-live="polite">
+    <div class="search-pred-grid" id="search-pred-results"></div>
+    <div class="search-pred-footer" id="search-pred-footer" style="display:none">
+      <span class="search-pred-count" id="search-pred-count"></span>
+      <a class="search-pred-all" id="search-pred-all" href="/search">
+        View all results <span aria-hidden="true">→</span>
+      </a>
+    </div>
+    <p class="search-pred-empty" id="search-pred-empty" style="display:none">No products found.</p>
+  </div>
+</div>
+
+<nav class="nav-card" id="navCard" role="navigation" aria-label="Main navigation">
+  {%- comment -%} ── PDP-only: progress bar ── {%- endcomment -%}
+  {%- if template.name == 'product' -%}
+    <div class="nav-progress" id="navProgress"></div>
+  {%- endif -%}
+
+  <div class="nav-left">
+    {%- comment -%} ── Logo vs Back link — different per template ── {%- endcomment -%}
+    {%- if template.name == 'product' -%}
+      <a href="/" class="nav-back">&larr; All Is Well.</a>
+    {%- else -%}
+      <div class="nav-logo">
+        <a href="/" aria-label="{{ shop.name }} home">All Is Well.</a>
+      </div>
+    {%- endif -%}
+
+    <ul class="nav-links">
+      {%- for link in section.settings.menu.links -%}
+        <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+      {%- endfor -%}
+    </ul>
+  </div>
+
+  <div class="nav-right">
+    <!-- Search -->
+    <button class="nav-search-btn" id="search-open" aria-label="Open search" aria-expanded="false" aria-controls="search-drawer">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </button>
+    <!-- Wishlist -->
+    <button class="nav-wishlist-btn" aria-label="Wishlist">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </button>
+    <!-- Cart -->
+    <a href="/cart" class="nav-cart-wrap" aria-label="Cart ({{ cart.item_count }} items)">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      {%- if cart.item_count > 0 -%}
+        <span class="cart-count">{{ cart.item_count }}</span>
+      {%- endif -%}
+    </a>
+    {%- comment -%} ── PDP-only: product info + mini ATC revealed on scroll ── {%- endcomment -%}
+    {%- if template.name == 'product' -%}
+      <div class="nav-product-info" id="navProductInfo">
+        <span class="nav-product-name" id="navProductName"></span>
+        <span class="nav-product-sep"></span>
+        <span class="nav-product-price" id="navProductPrice"></span>
+      </div>
+      <button class="nav-mini-atc" id="navMiniAtc" type="button">Add to Cart</button>
+    {%- endif -%}
+    <!-- Hamburger (mobile only) -->
+    <button class="nav-burger" id="mobMenuOpen" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobMenu">
+      <span class="nav-burger__line"></span>
+      <span class="nav-burger__line"></span>
+      <span class="nav-burger__line"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu overlay -->
+<div class="mob-overlay" id="mobOverlay" aria-hidden="true"></div>
+
+<!-- Mobile menu panel -->
+<div class="mob-menu" id="mobMenu" role="dialog" aria-label="Navigation menu" aria-hidden="true">
+  <div class="mob-menu__header">
+    <span class="mob-menu__wordmark">All Is Well.</span>
+    <button class="mob-menu__close" id="mobMenuClose" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  <nav class="mob-menu__nav">
+    <ul>
+      {%- for link in section.settings.menu.links -%}
+        <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+  <div class="mob-menu__footer">Dallas, TX — Est. 2025</div>
+</div>
+
+<!-- Toast Container -->
+<div id="aiw-toast-container" class="aiw-toast-container" aria-live="polite"></div>
+
+<!-- Cart Drawer Overlay -->
+<div class="drawer-overlay" id="cart-drawer-overlay" aria-hidden="true"></div>
+
+<!-- Cart Drawer -->
+<div class="drawer-panel" id="cart-drawer" role="dialog" aria-label="Shopping cart" aria-hidden="true">
+  <div class="drawer-header">
+    <span class="drawer-header__title">Your Cart</span>
+    <button class="drawer-close" id="cart-drawer-close" aria-label="Close cart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="cart-drawer-items"></div>
+  <div id="cart-drawer-empty" class="drawer-empty" style="display:none;">
+    <p>Your cart is empty.</p>
+    <a href="/collections/all">Continue Shopping</a>
+  </div>
+  <div class="drawer-footer">
+    <div class="drawer-subtotal">
+      <span class="drawer-subtotal__label">Subtotal</span>
+      <span class="drawer-subtotal__price" id="cart-drawer-subtotal">$0</span>
+    </div>
+    <a href="/checkout" class="btn-earth" id="cart-drawer-checkout">Checkout</a>
+  </div>
+</div>
+
+<!-- Wishlist Drawer Overlay -->
+<div class="drawer-overlay" id="wishlist-drawer-overlay" aria-hidden="true"></div>
+
+<!-- Wishlist Drawer -->
+<div class="drawer-panel" id="wishlist-drawer" role="dialog" aria-label="Wishlist" aria-hidden="true">
+  <div class="drawer-header">
+    <span class="drawer-header__title">Wishlist</span>
+    <button class="drawer-close" id="wishlist-drawer-close" aria-label="Close wishlist">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="wishlist-drawer-items"></div>
+  <div id="wishlist-drawer-empty" class="drawer-empty">
+    <p>Your wishlist is empty.</p>
+    <a href="/collections/all">Browse Products</a>
+  </div>
+</div>
+
+<script>
+(function() {
+  /* ── Predictive Search ── */
+  var openBtn  = document.getElementById('search-open');
+  var closeBtn = document.getElementById('search-close');
+  var drawer   = document.getElementById('search-drawer');
+  var overlay  = document.getElementById('search-overlay');
+  var input    = document.getElementById('search-input');
+  var form     = document.getElementById('search-form');
+  var panel    = document.getElementById('search-pred-panel');
+  var grid     = document.getElementById('search-pred-results');
+  var footer   = document.getElementById('search-pred-footer');
+  var countEl  = document.getElementById('search-pred-count');
+  var allLink  = document.getElementById('search-pred-all');
+  var emptyEl  = document.getElementById('search-pred-empty');
+
+  var debTimer, activeIdx = -1;
+
+  function openSearch() {
+    drawer.classList.add('is-open');
+    overlay.classList.add('is-open');
+    drawer.setAttribute('aria-hidden', 'false');
+    overlay.setAttribute('aria-hidden', 'false');
+    openBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    if (window.__lenis) window.__lenis.stop();
+    setTimeout(function() { if (input) input.focus(); }, 80);
+  }
+
+  function closeSearch() {
+    drawer.classList.remove('is-open');
+    overlay.classList.remove('is-open');
+    drawer.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('aria-hidden', 'true');
+    openBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    if (window.__lenis) window.__lenis.start();
+    openBtn.focus();
+    clearResults();
+  }
+
+  function clearResults() {
+    panel.classList.remove('has-results');
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
+    footer.style.display = 'none';
+    emptyEl.style.display = 'none';
+    activeIdx = -1;
+  }
+
+  function formatMoney(cents) {
+    return '$' + (cents / 100).toFixed(cents % 100 === 0 ? 0 : 2);
+  }
+
+  function renderResults(products, query) {
+    clearResults();
+    if (!products.length) {
+      panel.classList.add('has-results');
+      emptyEl.style.display = '';
+      return;
+    }
+
+    panel.classList.add('has-results');
+    products.forEach(function(p, i) {
+      var a    = document.createElement('a');
+      a.className   = 'search-pred-item';
+      a.href        = p.url;
+      a.tabIndex    = 0;
+      a.style.cssText = 'opacity:0;transform:translateY(18px);transition:opacity 0.35s ease ' + (i*0.07) + 's,transform 0.42s cubic-bezier(0.16,1,0.3,1) ' + (i*0.07) + 's,border-color 0.2s';
+
+      var imgDiv = document.createElement('div');
+      imgDiv.className = 'search-pred-img';
+      if (p.featured_image && p.featured_image.url) {
+        var img = document.createElement('img');
+        img.src       = p.featured_image.url.replace(/(\.\w+)(\?|$)/, '_400x$1$2');
+        img.alt       = p.title;
+        img.loading   = 'lazy';
+        img.decoding  = 'async';
+        imgDiv.appendChild(img);
+      }
+      a.appendChild(imgDiv);
+
+      var body  = document.createElement('div');
+      body.className = 'search-pred-body';
+      var name  = document.createElement('div');
+      name.className  = 'search-pred-name';
+      name.textContent = p.title;
+      body.appendChild(name);
+
+      if (p.price) {
+        var price = document.createElement('div');
+        price.className  = 'search-pred-price';
+        price.textContent = formatMoney(p.price);
+        body.appendChild(price);
+      }
+      a.appendChild(body);
+      grid.appendChild(a);
+
+      requestAnimationFrame(function() {
+        setTimeout(function() {
+          a.style.opacity   = '1';
+          a.style.transform = 'translateY(0)';
+        }, 20 + i * 60);
+      });
+    });
+
+    countEl.textContent = products.length + ' result' + (products.length === 1 ? '' : 's') + ' for "' + query + '"';
+    allLink.href        = '/search?type=product&q=' + encodeURIComponent(query);
+    footer.style.display = '';
+  }
+
+  function fetchPredictive(query) {
+    if (!query || query.length < 2) { clearResults(); return; }
+    if (form) form.classList.add('is-loading');
+    fetch('/search/suggest.json?q=' + encodeURIComponent(query) + '&resources[type]=product&resources[limit]=4&resources[options][unavailable_products]=last')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (form) form.classList.remove('is-loading');
+        var products = (data.resources && data.resources.results && data.resources.results.products) || [];
+        renderResults(products, query);
+      })
+      .catch(function() { if (form) form.classList.remove('is-loading'); });
+  }
+
+  function getItems() { return Array.from(grid.querySelectorAll('.search-pred-item')); }
+  function setActive(idx) {
+    var items = getItems();
+    items.forEach(function(el) { el.classList.remove('is-active'); });
+    if (idx >= 0 && idx < items.length) {
+      items[idx].classList.add('is-active');
+      items[idx].focus();
+      activeIdx = idx;
+    } else {
+      activeIdx = -1;
+      if (input) input.focus();
+    }
+  }
+
+  if (input) {
+    input.addEventListener('input', function() {
+      clearTimeout(debTimer);
+      debTimer = setTimeout(function() { fetchPredictive(input.value.trim()); }, 220);
+    });
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown' && getItems().length) { e.preventDefault(); setActive(0); }
+      if (e.key === 'Escape') closeSearch();
+    });
+  }
+
+  if (drawer) {
+    drawer.addEventListener('keydown', function(e) {
+      var items = getItems();
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(activeIdx + 1, items.length - 1)); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); setActive(activeIdx <= 0 ? -1 : activeIdx - 1); }
+      if (e.key === 'Escape')    closeSearch();
+    });
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openSearch);
+  if (closeBtn) closeBtn.addEventListener('click', closeSearch);
+  if (overlay)  overlay.addEventListener('click', closeSearch);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && drawer && drawer.classList.contains('is-open')) closeSearch();
+  });
+
+  {%- comment -%}
+    Nav scroll handler:
+    - Homepage/collection: simple scrollY > 60 triggers visual treatment only
+    - Product page: product-main.liquid owns the scroll handler (hero-based trigger + product info)
+    This prevents two handlers fighting over the same class.
+  {%- endcomment -%}
+  {%- unless template.name == 'product' -%}
+    var navCard = document.getElementById('navCard');
+    if (navCard) {
+      window.addEventListener('scroll', function() {
+        navCard.classList.toggle('nav-scrolled', window.scrollY > 60);
+      }, { passive: true });
+    }
+  {%- endunless -%}
+
+  /* ── Mobile menu ── */
+  var mobOpenBtn  = document.getElementById('mobMenuOpen');
+  var mobCloseBtn = document.getElementById('mobMenuClose');
+  var mobMenu     = document.getElementById('mobMenu');
+  var mobOverlay  = document.getElementById('mobOverlay');
+
+  function openMobMenu() {
+    if (!mobMenu) return;
+    var links = mobMenu.querySelectorAll('.mob-menu__nav a');
+    // Reset link positions before animating
+    links.forEach(function(link) {
+      link.style.opacity = '0';
+      link.style.transform = 'translateY(18px)';
+      link.style.transition = 'none';
+    });
+    mobMenu.classList.add('is-open');
+    mobOverlay.classList.add('is-open');
+    if (mobOpenBtn) { mobOpenBtn.classList.add('is-open'); mobOpenBtn.setAttribute('aria-expanded', 'true'); }
+    mobMenu.setAttribute('aria-hidden', 'false');
+    mobOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (window.__lenis) window.__lenis.stop();
+    // Stagger links in
+    links.forEach(function(link, i) {
+      setTimeout(function() {
+        link.style.transition = 'opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1), color 0.25s ease';
+        link.style.opacity = '1';
+        link.style.transform = 'translateY(0)';
+      }, 80 + i * 55);
+    });
+  }
+
+  function closeMobMenu() {
+    if (!mobMenu) return;
+    mobMenu.classList.remove('is-open');
+    mobOverlay.classList.remove('is-open');
+    if (mobOpenBtn) { mobOpenBtn.classList.remove('is-open'); mobOpenBtn.setAttribute('aria-expanded', 'false'); }
+    mobMenu.setAttribute('aria-hidden', 'true');
+    mobOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (window.__lenis) window.__lenis.start();
+  }
+
+  if (mobOpenBtn) mobOpenBtn.addEventListener('click', openMobMenu);
+  if (mobCloseBtn) mobCloseBtn.addEventListener('click', closeMobMenu);
+  if (mobOverlay) mobOverlay.addEventListener('click', closeMobMenu);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && mobMenu && mobMenu.classList.contains('is-open')) closeMobMenu();
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo" },
+    { "type": "link_list", "id": "menu", "label": "Main menu", "default": "main-menu" }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,129 @@
+{%- style -%}
+  .footer-card {
+    background: var(--card-bg2);
+    border-radius: var(--radius);
+    padding: 48px 40px 32px;
+    margin-top: var(--gap);
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .footer-brand-name {
+    font-family: var(--font-display);
+    font-size: 13px; font-weight: 400;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(255,255,255,0.7); margin-bottom: 16px;
+  }
+  .footer-logo img { height: 14px; width: auto; object-fit: contain; margin-bottom: 16px; opacity: 0.7; }
+  .footer-tagline {
+    font-size: 13px; font-weight: 300; color: var(--muted);
+    line-height: 1.7; max-width: 200px;
+  }
+  .footer-col-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.20em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 18px;
+  }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-links a {
+    font-size: 13px; font-weight: 300; color: var(--muted);
+    letter-spacing: 0.04em;
+    transition: color 0.3s, transform 0.3s;
+    display: inline-block;
+  }
+  .footer-links a:hover { color: var(--white); transform: translateX(4px); }
+  .footer-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 24px;
+  }
+  .footer-copy {
+    font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .footer-social { display: flex; gap: 24px; }
+  .footer-social a {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--dim);
+    transition: color 0.3s;
+  }
+  .footer-social a:hover { color: var(--earth); }
+
+  @media (max-width: 900px) {
+    .footer-card { padding: 40px 24px 28px; }
+    .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+  @media (max-width: 560px) {
+    .footer-card { padding: 32px 20px 24px; border-radius: 10px; }
+    .footer-top { grid-template-columns: 1fr 1fr; gap: 24px; }
+    .footer-bottom { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+{%- endstyle -%}
+
+<footer class="footer-card reveal" role="contentinfo">
+  <div class="footer-top">
+    <div>
+      {%- if section.settings.logo != blank -%}
+        <div class="footer-logo">
+          <img src="{{ section.settings.logo | image_url: width: 200 }}" alt="{{ shop.name }}" loading="lazy" decoding="async">
+        </div>
+      {%- else -%}
+        <div class="footer-brand-name">All Is Well.</div>
+      {%- endif -%}
+      <p class="footer-tagline">{{ section.settings.tagline | default: 'Basics that hit different. Built to last.' }}</p>
+    </div>
+
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'menu' -%}
+        <div {{ block.shopify_attributes }}>
+          <div class="footer-col-title">{{ block.settings.title }}</div>
+          <ul class="footer-links">
+            {%- for link in block.settings.menu.links -%}
+              <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; {{ 'now' | date: '%Y' }} All Is Well. All rights reserved.</span>
+    <div class="footer-social">
+      {%- if section.settings.social_instagram != blank -%}
+        <a href="{{ section.settings.social_instagram }}" target="_blank" rel="noopener">Instagram</a>
+      {%- endif -%}
+      {%- if section.settings.social_tiktok != blank -%}
+        <a href="{{ section.settings.social_tiktok }}" target="_blank" rel="noopener">TikTok</a>
+      {%- endif -%}
+      {%- if section.settings.social_pinterest != blank -%}
+        <a href="{{ section.settings.social_pinterest }}" target="_blank" rel="noopener">Pinterest</a>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Footer logo" },
+    { "type": "text", "id": "tagline", "label": "Tagline", "default": "Basics that hit different. Built to last." },
+    { "type": "url", "id": "social_instagram", "label": "Instagram URL" },
+    { "type": "url", "id": "social_tiktok", "label": "TikTok URL" },
+    { "type": "url", "id": "social_pinterest", "label": "Pinterest URL" }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu Column",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Column title", "default": "Shop" },
+        { "type": "link_list", "id": "menu", "label": "Menu" }
+      ]
+    }
+  ]
+}
+{% endschema %}

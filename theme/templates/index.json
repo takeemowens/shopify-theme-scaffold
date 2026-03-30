@@ -1,0 +1,30 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "heading": "",
+        "subheading": "",
+        "cta_text": "Shop the Collection",
+        "cta_link": "",
+        "image": ""
+      }
+    },
+    "marquee": {
+      "type": "marquee",
+      "settings": {}
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "heading": "10% off your first.",
+        "subtext": "Join the list — get 10% off your first order, early access to drops and restocks."
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "marquee",
+    "newsletter"
+  ]
+}

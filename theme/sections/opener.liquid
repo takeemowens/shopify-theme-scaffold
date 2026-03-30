@@ -1,0 +1,29 @@
+<div class="opener" id="opener">
+  <div class="opener-line"><span class="opener-word">All</span></div>
+  <div class="opener-line"><span class="opener-word">Is</span></div>
+  <div class="opener-line"><span class="opener-word">Well</span></div>
+  <div class="opener-sub">{{ section.settings.subheading | default: 'Unisex Essentials — Est. 2025' }}</div>
+</div>
+
+<script>
+(function(){
+  const opener = document.getElementById('opener');
+  if (!opener) return;
+  requestAnimationFrame(() => opener.classList.add('animate'));
+  setTimeout(() => opener.classList.add('exit'), 100);
+  setTimeout(() => {
+    opener.style.display = 'none';
+    document.body.classList.remove('locked');
+  }, 2600);
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Cinematic Opener",
+  "settings": [
+    { "type": "text", "id": "subheading", "label": "Subheading", "default": "Unisex Essentials — Est. 2025" },
+    { "type": "checkbox", "id": "enable", "label": "Enable opener animation", "default": true }
+  ]
+}
+{% endschema %}

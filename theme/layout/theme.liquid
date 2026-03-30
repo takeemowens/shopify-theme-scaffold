@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="{{ request.locale.iso_code }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title }} — {{ shop.name }}</title>
+  <meta name="description" content="{{ page_description | escape }}">
+
+  {%- comment -%} Canonical URL — prevents duplicate content from variant URLs {%- endcomment -%}
+  <link rel="canonical" href="{{ canonical_url }}">
+
+  {%- comment -%} Open Graph + Twitter Cards {%- endcomment -%}
+  <meta property="og:site_name" content="{{ shop.name }}">
+  <meta property="og:type" content="{% if template contains 'product' %}product{% else %}website{% endif %}">
+  <meta property="og:title" content="{{ page_title | escape }}">
+  <meta property="og:description" content="{{ page_description | escape }}">
+  {%- if template contains 'product' -%}
+    <meta property="og:image" content="https:{{ product.featured_image | image_url: width: 1200 }}">
+    <meta property="product:price:amount" content="{{ product.price | money_without_currency }}">
+    <meta property="product:price:currency" content="{{ shop.currency }}">
+  {%- elsif template contains 'collection' -%}
+    {%- if collection.image -%}
+      <meta property="og:image" content="https:{{ collection.image | image_url: width: 1200 }}">
+    {%- endif -%}
+  {%- endif -%}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page_title | escape }}">
+  <meta name="twitter:description" content="{{ page_description | escape }}">
+
+  {{ content_for_header }}
+
+  {%- comment -%} Söhne + SohneBreit — WOFF2 (53% smaller than OTF) — trimmed to 10 used weights {%- endcomment -%}
+  {%- comment -%} Preload opener background — highest priority, fetches before body parses {%- endcomment -%}
+  {%- if settings.opener_bg_image != blank -%}
+    <link rel="preload" as="image" href="{{ settings.opener_bg_image | image_url: width: 1400, format: 'webp' }}" fetchpriority="high">
+  {%- endif -%}
+
+  <link rel="preload" href="{{ 'TestSohne-Leicht-BF663d89cd4952e.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ 'TestSohneBreit-Leicht-BF663d89cae7333.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face { font-family:'Sohne'; src:url('{{ "TestSohne-Leicht-BF663d89cd4952e.woff2" | asset_url }}') format('woff2'); font-weight:300; font-style:normal; font-display:swap; }
+    @font-face { font-family:'Sohne'; src:url('{{ "TestSohne-Buch-BF663d89cd32e6a.woff2" | asset_url }}') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+    @font-face { font-family:'Sohne'; src:url('{{ "TestSohne-Kraftig-BF663d89cd37e26.woff2" | asset_url }}') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+    @font-face { font-family:'Sohne'; src:url('{{ "TestSohne-Halbfett-BF663d89cd2d67b.woff2" | asset_url }}') format('woff2'); font-weight:600; font-style:normal; font-display:swap; }
+    @font-face { font-family:'Sohne'; src:url('{{ "TestSohne-Dreiviertelfett-BF663d89ccc5f66.woff2" | asset_url }}') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+
+    @font-face { font-family:'SohneBreit'; src:url('{{ "TestSohneBreit-Leicht-BF663d89cae7333.woff2" | asset_url }}') format('woff2'); font-weight:300; font-style:normal; font-display:swap; }
+    @font-face { font-family:'SohneBreit'; src:url('{{ "TestSohneBreit-Kraftig-BF663d89caa6b6c.woff2" | asset_url }}') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+    @font-face { font-family:'SohneBreit'; src:url('{{ "TestSohneBreit-Halbfett-BF663d89cacf645.woff2" | asset_url }}') format('woff2'); font-weight:600; font-style:normal; font-display:swap; }
+    @font-face { font-family:'SohneBreit'; src:url('{{ "TestSohneBreit-Dreiviertelfett-BF663d89c955618.woff2" | asset_url }}') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+    @font-face { font-family:'SohneBreit'; src:url('{{ "TestSohneBreit-Extrafett-BF663d89ca5b44e.woff2" | asset_url }}') format('woff2'); font-weight:900; font-style:normal; font-display:swap; }
+  </style>
+
+  {{ 'base.css' | asset_url | stylesheet_tag }}
+
+  {%- if template contains 'product' -%}
+    {{ 'section-product.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
+
+  {%- if template contains 'collection' -%}
+    {{ 'section-collection.css' | asset_url | stylesheet_tag }}
+  {%- endif -%}
+
+  {%- comment -%} JSON-LD Structured Data {%- endcomment -%}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    "url": {{ shop.url | json }},
+    "logo": {{ shop.url | append: '/favicon.ico' | json }}
+  }
+  </script>
+
+  {%- if template contains 'product' -%}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": {{ product.title | json }},
+      "description": {{ product.description | strip_html | truncate: 500 | json }},
+      {%- if product.featured_image -%}
+      "image": {{ product.featured_image | image_url: width: 1200 | prepend: 'https:' | json }},
+      {%- endif -%}
+      "brand": {
+        "@type": "Brand",
+        "name": {{ product.vendor | json }}
+      },
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": {{ shop.currency | json }},
+        "lowPrice": {{ product.price_min | money_without_currency | json }},
+        "highPrice": {{ product.price_max | money_without_currency | json }},
+        "availability": "https://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}",
+        "offerCount": {{ product.variants.size | json }}
+      }
+    }
+    </script>
+  {%- endif -%}
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": {{ shop.url | json }}
+      }
+      {%- if template contains 'collection' -%}
+      ,{
+        "@type": "ListItem",
+        "position": 2,
+        "name": {{ collection.title | json }},
+        "item": {{ shop.url | append: collection.url | json }}
+      }
+      {%- endif -%}
+      {%- if template contains 'product' -%}
+      {%- if product.collections.size > 0 -%}
+      ,{
+        "@type": "ListItem",
+        "position": 2,
+        "name": {{ product.collections.first.title | json }},
+        "item": {{ shop.url | append: product.collections.first.url | json }}
+      }
+      {%- endif -%}
+      ,{
+        "@type": "ListItem",
+        "position": {% if product.collections.size > 0 %}3{% else %}2{% endif %},
+        "name": {{ product.title | json }},
+        "item": {{ shop.url | append: product.url | json }}
+      }
+      {%- endif -%}
+    ]
+  }
+  </script>
+</head>
+<body class="locked">
+  <a class="skip-to-content" href="#main-content">Skip to content</a>
+
+  {%- comment -%} ── Sitewide Cinematic Opener — adapts per template ── {%- endcomment -%}
+  <div class="opener" id="opener">
+    {%- if template contains 'product' -%}
+      {%- assign title_words = product.title | split: ' ' -%}
+      {%- if title_words.size <= 3 -%}
+        {%- for word in title_words -%}
+          <div class="opener-line"><span class="opener-word">{{ word }}</span></div>
+        {%- endfor -%}
+        <div class="opener-line"><span class="opener-word opener-word--dot">.</span></div>
+      {%- else -%}
+        {%- comment -%} For longer titles, split into 2 lines {%- endcomment -%}
+        {%- assign half = title_words.size | divided_by: 2 -%}
+        <div class="opener-line"><span class="opener-word">
+          {%- for word in title_words -%}
+            {%- if forloop.index <= half -%}{{ word }} {%- endif -%}
+          {%- endfor -%}
+        </span></div>
+        <div class="opener-line"><span class="opener-word">
+          {%- for word in title_words -%}
+            {%- if forloop.index > half -%}{{ word }} {%- endif -%}
+          {%- endfor -%}.
+        </span></div>
+      {%- endif -%}
+      <div class="opener-sub">All Is Well — {{ product.type | default: 'The Essentials' }}</div>
+    {%- elsif template contains 'collection' -%}
+      {%- assign col_words = collection.title | split: ' ' -%}
+      {%- for word in col_words -%}
+        <div class="opener-line"><span class="opener-word">{{ word }}</span></div>
+      {%- endfor -%}
+      <div class="opener-sub">{{ collection.products_count }} {{ collection.products_count | pluralize: 'piece', 'pieces' }}</div>
+    {%- else -%}
+      {%- if settings.opener_bg_image != blank -%}
+        <div class="opener-bg" style="background-image:url('{{ settings.opener_bg_image | image_url: width: 1400, format: 'webp' }}')" aria-hidden="true"></div>
+      {%- endif -%}
+      <div class="opener-logo-wrap">
+        {%- render 'icon-logo' -%}
+      </div>
+      <div class="opener-sub">Unisex Essentials — Est. 2025</div>
+    {%- endif -%}
+  </div>
+
+  <script>
+  (function(){
+    var opener = document.getElementById('opener');
+    if (!opener) return;
+    requestAnimationFrame(function() { opener.classList.add('animate'); });
+    setTimeout(function() { opener.classList.add('exit'); }, 100);
+    setTimeout(function() {
+      opener.style.display = 'none';
+      document.body.classList.remove('locked');
+    }, 2200);
+  })();
+  </script>
+
+  {% section 'header' %}
+
+  <main id="main-content" class="page-wrapper" role="main">
+    {{ content_for_layout }}
+  </main>
+
+  {% section 'footer' %}
+
+  <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
+  <script src="{{ 'ScrollTrigger.min.js' | asset_url }}" defer></script>
+  <script src="{{ 'lenis.min.js' | asset_url }}" defer></script>
+  <script src="{{ 'motion.js' | asset_url }}" defer></script>
+  <script src="{{ 'search.js' | asset_url }}" defer></script>
+  <script src="{{ 'cart.js' | asset_url }}" defer></script>
+</body>
+</html>

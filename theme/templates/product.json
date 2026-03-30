@@ -1,0 +1,53 @@
+{
+  "sections": {
+    "product-main": {
+      "type": "product-main",
+      "blocks": {
+        "detail-1": {
+          "type": "detail_card",
+          "settings": {
+            "title": "Product Details",
+            "text": "One Size Fits All — Poly/Spandex Front (82% Polyester / 18% Spandex) — 100% Poly Mesh Back — Adjustable snapback closure — Tonal flat bill"
+          }
+        },
+        "detail-2": {
+          "type": "detail_card",
+          "settings": {
+            "title": "Fabric & Fit",
+            "text": "Foam-based structured front laminated with poly/spandex interlock. Breathable mesh back for ventilation. One size fits all with an adjustable snapback for a dialed-in fit."
+          }
+        },
+        "detail-3": {
+          "type": "detail_card",
+          "settings": {
+            "title": "Care & Shipping",
+            "text": "Spot clean only — do not machine wash. Free shipping on orders over $75. 30-day returns, no questions asked."
+          }
+        },
+        "badge-1": {
+          "type": "trust_badge",
+          "settings": {
+            "text": "Free shipping $75+"
+          }
+        },
+        "badge-2": {
+          "type": "trust_badge",
+          "settings": {
+            "text": "Free returns"
+          }
+        },
+        "badge-3": {
+          "type": "trust_badge",
+          "settings": {
+            "text": "Ships in 2–3 days"
+          }
+        }
+      },
+      "block_order": ["detail-1", "detail-2", "detail-3", "badge-1", "badge-2", "badge-3"],
+      "settings": {
+        "related_heading": "Complete the Look"
+      }
+    }
+  },
+  "order": ["product-main"]
+}

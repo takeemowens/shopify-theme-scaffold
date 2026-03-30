@@ -1,0 +1,89 @@
+<style>
+.newsletter-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 48px 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  margin-top: var(--gap);
+}
+.newsletter-card h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.5vw, 3rem);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.nl-sub {
+  font-size: 13px; font-weight: 300;
+  color: var(--muted); line-height: 1.7;
+}
+.nl-form { display: flex; }
+.nl-input {
+  flex: 1;
+  padding: 14px 18px;
+  font-family: var(--font);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  background: var(--card-bg2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.3s;
+}
+.nl-input:focus { border-color: var(--earth); }
+.nl-input::placeholder { color: var(--dim); }
+.nl-btn {
+  padding: 14px 28px;
+  background: var(--white);
+  color: var(--card-bg);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+.nl-btn:hover { background: var(--earth); color: var(--white); transform: translateY(-2px); }
+
+@media (max-width: 900px) {
+  .newsletter-card { grid-template-columns: 1fr; gap: 28px; padding: 40px 24px; }
+}
+@media (max-width: 560px) {
+  .newsletter-card { padding: 32px 20px; gap: 24px; border-radius: 10px; }
+  .nl-form { flex-direction: column; }
+  .nl-input { border-bottom: none; }
+  .nl-btn { width: 100%; padding: 14px; text-align: center; }
+}
+</style>
+
+<div class="newsletter-card reveal">
+  <div>
+    <h2>{{ section.settings.heading | default: '10% off your first.' | newline_to_br }}</h2>
+    <p class="nl-sub">{{ section.settings.subtext | default: 'Join the list — get 10% off your first order, early access to new drops, and restocks before anyone else.' }}</p>
+  </div>
+  <div>
+    {% form 'customer', class: 'nl-form' %}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <input class="nl-input" type="email" name="contact[email]" placeholder="Your email address" required aria-label="Email address" aria-invalid="false" autocomplete="email">
+      <button class="nl-btn" type="submit">Subscribe</button>
+    {% endform %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "10% off your first." },
+    { "type": "textarea", "id": "subtext", "label": "Subtext", "default": "Join the list — get 10% off your first order, early access to new drops, and restocks before anyone else." }
+  ]
+}
+{% endschema %}

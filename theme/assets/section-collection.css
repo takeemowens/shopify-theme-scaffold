@@ -1,0 +1,19 @@
+/* =============================================
+   COLLECTION PAGE — All Is Well
+   Supplementary styles loaded via theme.liquid
+   Main styles live in collection-product-grid.liquid
+   ============================================= */
+
+/* Ensure smooth page feel on collection */
+.collection-products {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 48px;
+}
+
+@media (max-width: 900px) {
+  .collection-products { padding: 28px 24px; }
+}
+@media (max-width: 560px) {
+  .collection-products { padding: 20px 16px; border-radius: 0.625rem; }
+}

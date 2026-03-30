@@ -1,0 +1,66 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "All Is Well Theme",
+    "theme_version": "1.0.0",
+    "theme_author": "All Is Well Studio",
+    "theme_documentation_url": "https://thealliswellbrand.com",
+    "theme_support_email": "hello@thealliswellbrand.com"
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "color",
+        "id": "color_card_bg",
+        "label": "Card Background",
+        "default": "#1C2228"
+      },
+      {
+        "type": "color",
+        "id": "color_card_bg_dark",
+        "label": "Card Background Dark",
+        "default": "#181D22"
+      },
+      {
+        "type": "color",
+        "id": "color_white",
+        "label": "Primary Text",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "color_earth",
+        "label": "Accent (Earth Gold)",
+        "default": "#C4A87A"
+      },
+      {
+        "type": "color",
+        "id": "color_page_bg",
+        "label": "Page Background Base",
+        "default": "#141A20"
+      }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "font_body",
+        "label": "Body Font",
+        "default": "inter_n4"
+      }
+    ]
+  },
+  {
+    "name": "Intro Loader",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "opener_bg_image",
+        "label": "Loader background image"
+      }
+    ]
+  }
+]

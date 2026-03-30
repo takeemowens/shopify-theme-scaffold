@@ -1,0 +1,61 @@
+<style>
+.marquee-bar {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 18px 0;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  margin-top: var(--gap);
+}
+.marquee-inner {
+  display: inline-flex;
+  animation: marquee 30s linear infinite;
+}
+.marquee-item {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 0 40px;
+  flex-shrink: 0;
+}
+.marquee-sep {
+  color: var(--earth);
+  font-size: 10px;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-inner { animation: none; }
+}
+@media (max-width: 560px) {
+  .marquee-bar { border-radius: 10px; }
+}
+</style>
+
+<div class="marquee-bar reveal">
+  <div class="marquee-inner">
+    <span class="marquee-item">All Is Well.</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Unisex Essentials</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Made To Last</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Free Returns</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Comfort As Practice</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">All Is Well.</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Unisex Essentials</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Made To Last</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Free Returns</span><span class="marquee-sep">&#10022;</span>
+    <span class="marquee-item">Comfort As Practice</span><span class="marquee-sep">&#10022;</span>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Marquee",
+  "settings": []
+}
+{% endschema %}
