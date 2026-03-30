@@ -2,3 +2,9 @@
 *.log
 node_modules/
 .env
+# Licensed fonts — add your own per project
+theme/assets/*.otf
+theme/assets/*.ttf
+# Client images
+theme/assets/essentials-*.jpg
+theme/assets/essentials-*.webp
