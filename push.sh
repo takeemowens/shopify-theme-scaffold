@@ -8,7 +8,7 @@
 #   ./push.sh live                    → push all to live (requires confirmation)
 # ─────────────────────────────────────────────
 
-# ── CONFIG — update these in AGENTS.md and here ──
+# CONFIG: update these in AGENTS.md and here
 DEV_THEME_ID=""    # e.g. 139108221015
 LIVE_THEME_ID=""   # e.g. 139122737239
 
