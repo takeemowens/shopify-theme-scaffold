@@ -1,10 +1,10 @@
-# Session 1 — Token Setup Checklist
+# Session 1: Token Setup Checklist
 
 Complete this before building any sections. Takes ~30 minutes.
 
 ---
 
-## 1. Colors — `assets/base.css`
+## 1. Colors: `assets/base.css`
 
 Open `base.css` and fill in the CLIENT TOKENS block at the top of `:root`.
 
@@ -27,7 +27,7 @@ Also update the `body` background gradient at the bottom of the token block.
 
 ---
 
-## 2. Fonts — `layout/theme.liquid`
+## 2. Fonts: `layout/theme.liquid`
 
 Add `@font-face` declarations in the `<head>` for each font weight used.
 Then update `--font` and `--font-display` in `base.css`.
@@ -41,14 +41,14 @@ Upload `.woff2` files to `theme/assets/` or load from CDN.
 
 ---
 
-## 3. Logo — `assets/logo.svg`
+## 3. Logo: `assets/logo.svg`
 
 Replace `logo.svg` with client logo. Set fill to `var(--cream)` or `#FFF9EF`.
 Height in nav: `14px`. Width: `auto`.
 
 ---
 
-## 4. Store config — `AGENTS.md`
+## 4. Store config: `AGENTS.md`
 
 Update the store details at the top:
 - Store URL
@@ -57,7 +57,7 @@ Update the store details at the top:
 
 ---
 
-## 5. Body background — `assets/base.css`
+## 5. Body background: `assets/base.css`
 
 Replace the placeholder `background: var(--bg)` with the client's full gradient if needed:
 
@@ -69,4 +69,4 @@ background:
 
 ---
 
-## Done — start building sections.
+## Done. Start building sections.

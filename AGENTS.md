@@ -1,4 +1,4 @@
-# Shopify Theme Scaffold — Session Context
+# Shopify Theme Scaffold: Session Context
 
 ## Store Config
 <!-- Update these for every new client project -->
@@ -10,7 +10,7 @@
 
 ## AI Prod Team
 
-When making product, design, engineering, data, or marketing decisions — adopt the relevant team member's lens.
+When making product, design, engineering, data, or marketing decisions, adopt the relevant team member's lens.
 
 | Member | Role | Lens |
 |---|---|---|
@@ -24,46 +24,46 @@ When making product, design, engineering, data, or marketing decisions — adopt
 
 ## Working Style
 
-- **Bugs fix immediately** — no phase gating
-- **Features wait for their phase** — no scope creep mid-session
+- **Bugs fix immediately**, no phase gating
+- **Features wait for their phase**, no scope creep mid-session
 - **Finish one thing before starting the next**
-- **One question at a time** — don't overwhelm with multiple asks
-- **Direct feedback** — call out blind spots, don't sugarcoat
+- **One question at a time**, don't overwhelm with multiple asks
+- **Direct feedback**, call out blind spots, don't sugarcoat
 
 ---
 
 ## Shopify Theme Rules (Non-Negotiable)
 
 ### Push Protocol
-- **ALWAYS use `--nodelete`** — never push without it. Deletes `password.liquid` and breaks the store.
-- **Push sections BEFORE templates** — schema must exist before template JSON references block types.
-- **3-page smoke test after every push** — check index, collection, AND product page.
-- **Single file pushes preferred** — `./push.sh dev section-name`
+- **ALWAYS use `--nodelete`.** Never push without it. Deletes `password.liquid` and breaks the store.
+- **Push sections BEFORE templates**, schema must exist before template JSON references block types.
+- **3-page smoke test after every push**, check index, collection, AND product page.
+- **Single file pushes preferred**, `./push.sh dev section-name`
 
 ### Architecture
-- **Don't render what you don't need** — use `{% if template.name == 'product' %}` for template-specific elements.
-- **One owner per DOM behavior** — if two scripts manage the same class, they fight.
-- **No `!important` for layout** — if you need it, the architecture is wrong.
+- **Don't render what you don't need**, use `{% if template.name == 'product' %}` for template-specific elements.
+- **One owner per DOM behavior**, if two scripts manage the same class, they fight.
+- **No `!important` for layout**, if you need it, the architecture is wrong.
 
 ### Spacing
-- **Every section card gets `margin-top: var(--gap)`** — body flex gap doesn't propagate through Shopify's `.shopify-section` wrappers.
-- **Header exception** — `#shopify-section-header { display: contents; }` so sticky nav works against viewport.
-- **`--gap` responsive** — 24px desktop → 14px tablet (900px) → 10px mobile (560px).
+- **Every section card gets `margin-top: var(--gap)`**, body flex gap doesn't propagate through Shopify's `.shopify-section` wrappers.
+- **Header exception**, `#shopify-section-header { display: contents; }` so sticky nav works against viewport.
+- **`--gap` responsive**, 24px desktop → 14px tablet (900px) → 10px mobile (560px).
 
 ---
 
 ## Design Tokens
 
-All tokens are in `assets/base.css`. Client tokens are at the top of `:root` — fill these in Session 1 (see `_tokens.md`).
+All tokens are in `assets/base.css`. Client tokens are at the top of `:root`, fill these in Session 1 (see `_tokens.md`).
 
 **Structural tokens (never change):**
-- `--radius: 1rem` — card border radius
-- `--gap: 1.5rem` — section spacing
-- `--page-padding: 1.75rem` — body padding
-- `--ease-out-expo` · `--ease-smooth` — motion easings
+- `--radius: 1rem`, card border radius
+- `--gap: 1.5rem`, section spacing
+- `--page-padding: 1.75rem`, body padding
+- `--ease-out-expo` · `--ease-smooth`, motion easings
 - `--duration-fast` · `--duration-med` · `--duration-slow`
-- `--text-xs` through `--text-lg` — type scale
-- `--tracking-neg` through `--tracking-wider` — letter spacing
+- `--text-xs` through `--text-lg`, type scale
+- `--tracking-neg` through `--tracking-wider`, letter spacing
 
 ---
 
@@ -71,10 +71,10 @@ All tokens are in `assets/base.css`. Client tokens are at the top of `:root` —
 
 Before every push:
 - [ ] Read the file before editing (prevents context errors)
-- [ ] Use `./push.sh` — never raw `shopify theme push` without `--nodelete`
+- [ ] Use `./push.sh`, never raw `shopify theme push` without `--nodelete`
 - [ ] Smoke test: index + collection + product after push
 - [ ] Check mobile at 390px for any layout push
-- [ ] No hardcoded colors — use token variables only
+- [ ] No hardcoded colors, use token variables only
 - [ ] No font sizes not on the token scale
 
 ---

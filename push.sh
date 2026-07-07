@@ -1,6 +1,6 @@
 #!/bin/bash
 # ─────────────────────────────────────────────
-# push.sh — Safe theme push script
+# push.sh: safe theme push script
 # Usage:
 #   ./push.sh dev section-name        → push one file to dev
 #   ./push.sh dev                     → push all to dev (safe)
